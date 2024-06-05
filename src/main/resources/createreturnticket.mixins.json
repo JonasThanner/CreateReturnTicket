@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.qsmium.createreturnticket.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "deathpenalty.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "InventoryMixin"
+  ]
+}
