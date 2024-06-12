@@ -1,33 +1,24 @@
 package com.qsmium.createreturnticket.gui;
 
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.Util;
-import com.qsmium.createreturnticket.mixins.InventoryMixin;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentContents;
-import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.jline.reader.Widget;
 
-import java.util.List;
-
 @OnlyIn(Dist.CLIENT)
-public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEventListener
+public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEventListener
 {
-
+    public static ReturnTicketWindow instance;
     public static final ResourceLocation TEXTURE = new ResourceLocation(ModMain.MODID,"textures/return_ticket.png");
     private final Minecraft client;
     private final int x;
@@ -40,8 +31,11 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     private boolean mousePressed = false;
     private int currentRipStage = 0;
 
+    private ReturnTicketWidget ticketWidget;
+    private ImageButton closeButton;
 
-    public ReturnTicketWidget(int x, int y, int width, int height, Minecraft client)
+
+    public ReturnTicketWindow(int x, int y, int width, int height, Minecraft client)
     {
         super(x, y, width, height, null);
         this.client = client;
@@ -49,7 +43,15 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
         this.y = y;
         this.width = width;
         this.height = height;
+        instance = this;
 
+
+
+        //Add our TicketWidget
+        ticketWidget = new ReturnTicketWidget(x + 20, y + 15, 110, 50, client);
+
+        //Add Close Button
+        closeButton = new ImageButton(x + 150, y + 15, 7, 7, 0, 40, 0, TEXTURE, button -> {closeWindow();});
 
 
 
@@ -72,30 +74,32 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 
 
 
-        // Bind the texture
-        //Minecraft.getInstance().getTextureManager().bindTexture(TEXTURE);
-
-        // Draw the texture using blit
-        graphics.blit(TEXTURE, this.x, this.y, 20, 0, this.width - 31, this.height);
-
-
-        //Current Stage. Theres a total of 9 stages (including 0)
-        int stage = 0;
-        //Calculate the rip stage only if the mouse is pressed otherwise we just leave
-        if(mousePressed)
-        {
-            //Rip stage should be beginning from main x + main width - 31 and end at main x + main width + 50
-            int difference = 50 + 31;
-            int clampedMouseX = Util.Clamp(0, 50 + 31, mouseX - (x + width - 31));
-            float diffRatio = (float)clampedMouseX / (float)difference;
-            stage = (int) Math.floor(diffRatio * 9);
-            currentRipStage = stage;
-        }
 
 
 
-        //Draw the actual part of the ticket that gets ripped off
-        graphics.blit(TEXTURE, this.x + 79, this.y, 31 * stage, this.height, 31, this.height);
+
+
+        PoseStack poseStack = graphics.pose();
+
+        // Push the current pose to preserve the state
+        poseStack.pushPose();
+        poseStack.translate(0, 0, 200);
+
+        //Draw main texture of the window
+        graphics.blit(TEXTURE, x, y, 0, 100, width, height);
+
+        //Draw close button
+        closeButton.renderWidget(graphics, mouseX, mouseY, delta);
+
+        //Handle Ticket Rendering
+        ticketWidget.renderWidget(graphics, mouseX, mouseY, delta);
+
+        // Pop the pose to restore the previous state
+        poseStack.popPose();
+
+
+
+
     }
 
     @Override
@@ -128,16 +132,20 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if(active && mousePressed)
+        if(active)
         {
-            //Handle Ticket redemption
-            if(currentRipStage >= 8)
+            //Either we release and the ticket widget handles it => We return the widget handler or we release inside then we also handle it
+            if(ticketWidget.mouseReleased(mouseX, mouseY, button))
             {
-                ReturnTicketPacketHandler.sendRedeem();
-                currentRipStage = 0;
+                return true;
             }
-            mousePressed = false;
-            return true;
+
+            if(closeButton.mouseReleased(mouseX, mouseY, button))
+            {
+                return true;
+            }
+
+            return isMouseOver(mouseX, mouseY);
         }
         return false;
     }
@@ -145,10 +153,21 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
 
-        if(isMouseOver(mouseX, mouseY) && active)
+        if(active)
         {
-            mousePressed = true;
-            return true;
+            //Either we click inside the window => We handle it
+            //Or we click somewhere where the ticket handles it => return the ticket handling if it returns true
+            if(ticketWidget.mouseClicked(mouseX, mouseY, button))
+            {
+                return true;
+            }
+
+            if(closeButton.mouseClicked(mouseX, mouseY, button))
+            {
+                return true;
+            }
+
+            return isMouseOver(mouseX, mouseY);
         }
 
         return false;
@@ -161,6 +180,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 //    }
 
     public void toggleActive() {
+        ticketWidget.toggleActive();
         active = !active;
         setFocused(active);
     }
@@ -169,6 +189,11 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     public boolean apply()
     {
         return false;
+    }
+
+    public static void closeWindow()
+    {
+        instance.toggleActive();
     }
 
 

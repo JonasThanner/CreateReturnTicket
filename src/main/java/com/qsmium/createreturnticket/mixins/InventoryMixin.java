@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.gui.ReturnTicketButton;
 import com.qsmium.createreturnticket.gui.ReturnTicketWidget;
+import com.qsmium.createreturnticket.gui.ReturnTicketWindow;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(InventoryScreen.class)
 public abstract class InventoryMixin extends EffectRenderingInventoryScreen<InventoryMenu>
@@ -26,14 +28,15 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
     }
 
     private ReturnTicketButton returnTicketButton;
-    private ReturnTicketWidget returnTicketWidget;
+    private ReturnTicketWindow returnTicketWidget;
 
     @Inject(method = "init", at = @At("TAIL"))
     public void addButton(CallbackInfo ci) {
         //int purseX = ExampleClientConfig.CLIENT.pursePositionX.get();
         //int purseY = ExampleClientConfig.CLIENT.pursePositionY.get();
 
-        returnTicketWidget = new ReturnTicketWidget(this.leftPos + 50, this.topPos - 20, 40, 20, minecraft);
+        //The Actual Widget that houses the Return Ticket Image
+        returnTicketWidget = new ReturnTicketWindow(this.leftPos + 5, this.topPos + 5, 165, 74, minecraft);
 
         returnTicketButton = new ReturnTicketButton(this.leftPos + 140, this.topPos + 60, button -> {
             returnTicketWidget.toggleActive();
@@ -54,10 +57,23 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
         returnTicketWidget.render(graphics, mouseX, mouseY, delta);
     }
 
-//    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-//    public void onMouse(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-//        if (numismatic$purse.mouseClicked(mouseX, mouseY, button)) cir.setReturnValue(true);
-//    }
+    //We have to catch mouse clicks and redirect them to our widget
+    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+    public void onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+        if (returnTicketWidget.mouseClicked(mouseX, mouseY, button))
+        {
+            cir.setReturnValue(true);
+        }
+    }
+
+    //Catch mouse release clicks
+    @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true)
+    public void onMouseReleased(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+        if (returnTicketWidget.mouseReleased(mouseX, mouseY, button))
+        {
+            cir.setReturnValue(true);
+        }
+    }
 
 //    @Override
 //    protected void renderTooltip(PoseStack matrices, int x, int y) {
