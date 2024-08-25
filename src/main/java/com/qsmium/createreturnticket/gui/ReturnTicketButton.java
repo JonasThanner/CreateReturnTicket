@@ -20,7 +20,7 @@ public class ReturnTicketButton extends ImageButton
     private final Component TOOLTIP_TITLE;
 
     public ReturnTicketButton(int x, int y, OnPress pressAction, Player player, Screen parent) {
-        super(x, y,   20, 20, 0, 0, 20, ReturnTicketWidget.TEXTURE, pressAction);
+        super(x, y,   20, 20, 0, 0, 20, ReturnTicketWidget.TEXTURE, 512, 256, pressAction);
         this.parent = parent;
         this.TOOLTIP_TITLE = Component.literal("Cockckckkckc").setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA));
     }

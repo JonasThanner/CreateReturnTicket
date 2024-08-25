@@ -4,25 +4,18 @@ package com.qsmium.createreturnticket.gui;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.Util;
-import com.qsmium.createreturnticket.mixins.InventoryMixin;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentContents;
-import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.jline.reader.Widget;
-
-import java.util.List;
+import org.joml.Quaterniond;
+import org.joml.Quaternionf;
 
 @OnlyIn(Dist.CLIENT)
 public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEventListener
@@ -35,10 +28,16 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     private final int width;
     private final int height;
 
+    private final int rippingAnimTime = 120;
+
     private boolean active = false;
     //private final List<Button> buttons = new ArrayList<>();
     private boolean mousePressed = false;
+    private boolean rippingTicket = false;
+    private boolean redeemingTicket = false;
+    private int currentRedeemStage = 0;
     private int currentRipStage = 0;
+    private int currentRippingAnimTimer = -1; //If its -1 => Disabled
 
 
     public ReturnTicketWidget(int x, int y, int width, int height, Minecraft client)
@@ -75,27 +74,106 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
         // Bind the texture
         //Minecraft.getInstance().getTextureManager().bindTexture(TEXTURE);
 
-        // Draw the texture using blit
-        graphics.blit(TEXTURE, this.x, this.y, 20, 0, this.width - 31, this.height);
 
 
-        //Current Stage. Theres a total of 9 stages (including 0)
-        int stage = 0;
-        //Calculate the rip stage only if the mouse is pressed otherwise we just leave
+        //Calculate the rip stages only if the mouse is pressed otherwise we just leave
+        //In this we calculate which of the two ripping things we activate
+        //If none of the two are active => We choose one and dont let go of it until we release the mouse
+        //If one is active => We treat that one
         if(mousePressed)
         {
-            //Rip stage should be beginning from main x + main width - 31 and end at main x + main width + 50
-            int difference = 50 + 31;
-            int clampedMouseX = Util.Clamp(0, 50 + 31, mouseX - (x + width - 31));
-            float diffRatio = (float)clampedMouseX / (float)difference;
-            stage = (int) Math.floor(diffRatio * 9);
-            currentRipStage = stage;
+            //If we are neither ripping nor redeeming => Choose which one to do
+            if(!rippingTicket && !redeemingTicket)
+            {
+                //Decide in which areas we want to start the ripping and redeeming things
+
+                //Case for ripping ticket
+                if(mouseX >= 40 && mouseX <= x + 50 && mouseY >= y && mouseY <= y + 10)
+                {
+                    rippingTicket = true;
+                }
+
+                //Case for redeeming ticket
+                else if (mouseX >= x + 80 && mouseX <= x + width && mouseY >= y && mouseY <= y + height)
+                {
+                    redeemingTicket = true;
+                }
+
+
+            }
+
+            //If we are doing one of the two things
+            else
+            {
+                //If we are ripping the ticket
+                if(rippingTicket)
+                {
+                    //Rip stage should be beginning from main x + main width - 31 and end at main x + main width + 50
+                    int difference = height * 2;
+                    int clampedMouseY = Util.Clamp(0, height * 2, mouseY);
+                    float diffRatio = (float)clampedMouseY / (float)difference;
+                    currentRipStage = (int) Math.floor(diffRatio * 6);
+                }
+
+                //If we are redeeming the ticket
+                if(redeemingTicket)
+                {
+                    //Rip stage should be beginning from main x + main width - 31 and end at main x + main width + 50
+                    int difference = 50 + 31;
+                    int clampedMouseX = Util.Clamp(0, 50 + 31, mouseX - (x + width - 31));
+                    float diffRatio = (float)clampedMouseX / (float)difference;
+                    currentRedeemStage = (int) Math.floor(diffRatio * 9);
+                }
+            }
+
         }
 
+        //Graphics rendering incase we just ripped our ticket
+        //If we ripped our ticket we want 2 Graphics
+        //The left and right side of our graphics
+        if(currentRippingAnimTimer >= 0)
+        {
+            //Increment Animation Time
+            currentRippingAnimTimer++;
+
+            //Render left side of ripped ticket
+            //Left side should move down and to left
+            int moveApart = (currentRippingAnimTimer) / 8;
+            int leftYAnim = this.y + (currentRippingAnimTimer / 4);
+            PoseStack poseStack = graphics.pose();
+            poseStack.pushPose();
+            //poseStack.rotateAround(Quaternionf., this.x / 2, this.y / 2, 0);
+            graphics.blit(TEXTURE, this.x - moveApart, leftYAnim, 119, 0, 39, this.height, 512, 256);
+            poseStack.popPose();
+
+            //Render right side of ripped ticket
+            //Side side should move upwards and to right
+            int rightYAnim = this.y - currentRippingAnimTimer;
+            graphics.blit(TEXTURE, this.x + 40 + moveApart, leftYAnim, 186, 0, 58, this.height, 512, 256);
 
 
-        //Draw the actual part of the ticket that gets ripped off
-        graphics.blit(TEXTURE, this.x + 79, this.y, 31 * stage, this.height, 31, this.height);
+
+
+            //Exiting Animation
+            if(currentRippingAnimTimer >= 120)
+            {
+                currentRippingAnimTimer = -1;
+            }
+        }
+
+        //Draw the ticket if its not being ripped apart
+        else
+        {
+            //Draw the part of the ticket that gets ripped apart => Ripping of
+            graphics.blit(TEXTURE, this.x, this.y, 51 * currentRipStage, 174, 51, this.height, 512, 256);
+
+            // Draw the part of the ticket thats static
+            graphics.blit(TEXTURE, this.x + 51, this.y, 20 + 51, 0, this.width - 31 - 51, this.height, 512, 256);
+
+            //Draw the actual part of the ticket that gets ripped off => Redeeming
+            graphics.blit(TEXTURE, this.x + 79, this.y, 31 * currentRedeemStage, this.height, 31, this.height, 512, 256);
+
+        }
     }
 
     @Override
@@ -130,12 +208,26 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if(active && mousePressed)
         {
+
             //Handle Ticket redemption
-            if(currentRipStage >= 8)
+            if(currentRedeemStage >= 8)
             {
                 ReturnTicketPacketHandler.sendRedeem();
-                currentRipStage = 0;
             }
+
+            //Handle Ticket Ripping
+            if(currentRipStage >= 5)
+            {
+                //RIP TICKET
+                currentRippingAnimTimer = 0;
+            }
+
+            //Reset all Ripping Variables
+            redeemingTicket = false;
+            rippingTicket = false;
+            currentRedeemStage = 0;
+            currentRipStage = 0;
+
             mousePressed = false;
             return true;
         }
@@ -163,6 +255,12 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     public void toggleActive() {
         active = !active;
         setFocused(active);
+
+        //Reset ripping animation on disable
+        if(!active)
+        {
+            currentRippingAnimTimer = -1;
+        }
     }
 
     @Override

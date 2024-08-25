@@ -30,7 +30,7 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
     private ReturnTicketButton returnTicketButton;
     private ReturnTicketWindow returnTicketWidget;
 
-    @Inject(method = "init", at = @At("TAIL"))
+    @Inject(method = "init", at = @At("TAIL"), remap = false)
     public void addButton(CallbackInfo ci) {
         //int purseX = ExampleClientConfig.CLIENT.pursePositionX.get();
         //int purseY = ExampleClientConfig.CLIENT.pursePositionY.get();
@@ -52,13 +52,13 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
 //        this.numismatic$purse = new PurseWidget(this.leftPos + 129, this.topPos + 20, minecraft, CurrencyHolderAttacher.getExampleHolderUnwrap(minecraft.player));
 //    }
 
-    @Inject(method = "render", at = @At("TAIL"))
+    @Inject(method = "render", at = @At("TAIL"), remap = false)
     public void onRender(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         returnTicketWidget.render(graphics, mouseX, mouseY, delta);
     }
 
     //We have to catch mouse clicks and redirect them to our widget
-    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true, remap = false)
     public void onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         if (returnTicketWidget.mouseClicked(mouseX, mouseY, button))
         {
@@ -67,7 +67,7 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
     }
 
     //Catch mouse release clicks
-    @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true, remap = false)
     public void onMouseReleased(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         if (returnTicketWidget.mouseReleased(mouseX, mouseY, button))
         {

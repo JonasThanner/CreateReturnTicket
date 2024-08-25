@@ -51,7 +51,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         ticketWidget = new ReturnTicketWidget(x + 20, y + 15, 110, 50, client);
 
         //Add Close Button
-        closeButton = new ImageButton(x + 150, y + 15, 7, 7, 0, 40, 0, TEXTURE, button -> {closeWindow();});
+        closeButton = new ImageButton(x + 150, y + 15, 7, 7, 0, 40, 0, TEXTURE, 512, 256, button -> {closeWindow();});
 
 
 
@@ -86,7 +86,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         poseStack.translate(0, 0, 200);
 
         //Draw main texture of the window
-        graphics.blit(TEXTURE, x, y, 0, 100, width, height);
+        graphics.blit(TEXTURE, x, y, 0, 100, width, height, 512, 256);
 
         //Draw close button
         closeButton.renderWidget(graphics, mouseX, mouseY, delta);
