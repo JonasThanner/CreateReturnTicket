@@ -1,6 +1,14 @@
 package com.qsmium.createreturnticket;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.qsmium.createreturnticket.gui.ReturnTicketWindow;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.resources.ResourceLocation;
 import org.joml.Quaternionf;
+import org.lwjgl.opengl.GL11;
 
 public class Util
 {
@@ -10,25 +18,55 @@ public class Util
         return Math.max(min, Math.min(max, value));
     }
 
-    public static Quaternionf angleAxisToQuaternion(double angle, double axisX, double axisY, double axisZ) {
-        // Normalize the axis to ensure it's a unit vector
-        double magnitude = Math.sqrt(axisX * axisX + axisY * axisY + axisZ * axisZ);
-        double normAxisX = axisX / magnitude;
-        double normAxisY = axisY / magnitude;
-        double normAxisZ = axisZ / magnitude;
+    public static void setupStencilMask()
+    {
+        // Reset stencil state and clear stencil buffer
+        GL11.glDisable(GL11.GL_STENCIL_TEST);
+        RenderSystem.stencilMask(-1);
+        RenderSystem.clear(GL11.GL_STENCIL_BUFFER_BIT, Minecraft.ON_OSX);
 
-        // Calculate the half-angle
-        double halfAngle = angle / 2.0;
-        double sinHalfAngle = Math.sin(halfAngle);
-        double cosHalfAngle = Math.cos(halfAngle);
+        // Setup for stencil buffer writing
+        GL11.glEnable(GL11.GL_STENCIL_TEST);
+        RenderSystem.stencilOp(GL11.GL_REPLACE, GL11.GL_KEEP, GL11.GL_KEEP);
+        RenderSystem.stencilMask(0xFF);
+        RenderSystem.stencilFunc(GL11.GL_EQUAL, 1, 0xFF);
+        RenderSystem.colorMask(false, false, false, false);
+        RenderSystem.depthMask(false);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+    }
 
-        // Compute the quaternion components
-        double w = cosHalfAngle;
-        double x = normAxisX * sinHalfAngle;
-        double y = normAxisY * sinHalfAngle;
-        double z = normAxisZ * sinHalfAngle;
+    public static void setupStencilTexture()
+    {
+        // Setup for color buffer filling
+        GL11.glEnable(GL11.GL_STENCIL_TEST);
+        RenderSystem.stencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
+        RenderSystem.stencilMask(0);
+        RenderSystem.stencilFunc(GL11.GL_EQUAL, 1, 0xFF);
+        RenderSystem.colorMask(true, true, true, true);
+        RenderSystem.depthMask(true);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+    }
 
-        return new Quaternionf(w, x, y, z);
+    public static void disableStencil()
+    {
+        GL11.glDisable(GL11.GL_STENCIL_TEST);
+    }
+
+    //Draws multiple Repating Blits
+    //Tiles them according to how many repeating x and y are wanted
+    public static void drawRepatingBlit(GuiGraphics guiGraphics, ResourceLocation texLoc, int xTopLeft, int yTopLeft,int uvTopLeftX, int uvTopLeftY, int uvWidth, int uvHeight, int sourceTexWidth, int sourceTexHeight, int repeatingX, int repeatingY)
+    {
+        for(int i = 0; i < repeatingX; i++)
+        {
+            for(int k = 0; k < repeatingY; k++)
+            {
+                guiGraphics.blit(texLoc, xTopLeft + (i * uvWidth), yTopLeft + (k * uvHeight), uvTopLeftX, uvTopLeftY, uvWidth, uvHeight, sourceTexWidth, sourceTexHeight);
+            }
+        }
+
+
     }
 }
 

@@ -1,5 +1,7 @@
 package com.qsmium.createreturnticket.gui;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.Util;
@@ -10,16 +12,25 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.jline.reader.Widget;
+import org.lwjgl.opengl.GL11;
 
 @OnlyIn(Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = ModMain.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEventListener
 {
     public static ReturnTicketWindow instance;
     public static final ResourceLocation TEXTURE = new ResourceLocation(ModMain.MODID,"textures/return_ticket.png");
+
+    public static final ResourceLocation TEST_MASK = new ResourceLocation(ModMain.MODID,"textures/test_mask.png");
     private final Minecraft client;
     private final int x;
     private final int y;
@@ -33,6 +44,12 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
 
     private ReturnTicketWidget ticketWidget;
     private ImageButton closeButton;
+
+    @SubscribeEvent
+    public static void onClientSetup(final FMLClientSetupEvent event)
+    {
+        RenderSystem.recordRenderCall(() -> Minecraft.getInstance().getMainRenderTarget().enableStencil());
+    }
 
 
     public ReturnTicketWindow(int x, int y, int width, int height, Minecraft client)
@@ -67,6 +84,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
 
     }
 
+
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta)
     {
@@ -85,8 +103,23 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         poseStack.pushPose();
         poseStack.translate(0, 0, 200);
 
+        Util.setupStencilMask();
+        RenderSystem.setShaderTexture(0, TEST_MASK);
+        //RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        graphics.blit(TEST_MASK, x, y, 0, 100, width, height, 512, 256);
+
+        // Enable blending for transparency
+
+
+
+        Util.setupStencilTexture();
+        RenderSystem.setShaderTexture(0, TEXTURE);
+
+        //RenderSystem.blendFunc(GlStateManager.SourceFactor.DST_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         //Draw main texture of the window
         graphics.blit(TEXTURE, x, y, 0, 100, width, height, 512, 256);
+
+        Util.disableStencil();
 
         //Draw close button
         closeButton.renderWidget(graphics, mouseX, mouseY, delta);

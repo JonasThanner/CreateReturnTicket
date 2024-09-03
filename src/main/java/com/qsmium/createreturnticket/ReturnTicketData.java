@@ -11,6 +11,7 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     private Vec3 enterLocation = new Vec3(0, 0, 0);
     private Vec3 exitLocation = new Vec3(0, 0, 0);
     private boolean rippedReturnTicket = true; //At the beginning no valid return ticket should exist
+    private boolean invalidTicket = true; //Tickets are invalidated when a Player leaves the "Allowance" Zone between Train Transfers
 
     public void setEnterLocation(Vec3 newLocation)
     {
@@ -22,6 +23,9 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     }
     public void ripReturnTicket() { rippedReturnTicket = true; }
     public void un_ripReturnTicket() { rippedReturnTicket = false; }
+    public void invalidateTicket() { invalidTicket = true; }
+    public void validateTicket() { invalidTicket = false; }
+
 
     public Vec3 getEnterLocation()
     {
@@ -32,6 +36,7 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
         return exitLocation;
     }
     public boolean isReturnTicketRipped() {return rippedReturnTicket; }
+    public boolean isValid() { return !invalidTicket; }
 
 
     @Override
@@ -48,6 +53,9 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
         tag.putDouble("exitX", exitLocation.x);
         tag.putDouble("exitY", exitLocation.y);
         tag.putDouble("exitZ", exitLocation.z);
+
+        //Save Ticket Validity
+        tag.putBoolean("invalidTicket", invalidTicket);
         return tag;
     }
 
@@ -59,5 +67,8 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
 
         //Retreive Exit Location from NBT
         exitLocation = new Vec3(nbt.getDouble("exitX"), nbt.getDouble("exitY"), nbt.getDouble("exitZ"));
+
+        //Get Ticket validity
+        invalidTicket = nbt.getBoolean("invalidTicket");
     }
 }

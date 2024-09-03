@@ -1,8 +1,10 @@
 package com.qsmium.createreturnticket.gui;
 
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ModMain;
+import com.qsmium.createreturnticket.TicketManager;
 import com.qsmium.createreturnticket.Util;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.client.Minecraft;
@@ -139,18 +141,32 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             //Render left side of ripped ticket
             //Left side should move down and to left
             int moveApart = (currentRippingAnimTimer) / 8;
-            int leftYAnim = this.y + (currentRippingAnimTimer / 4);
+
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, ((float)(120 - Util.Clamp(0, 120, (currentRippingAnimTimer * 2) - 120))) / 120.0f);
+
+            float leftRippedX = ((float) currentRippingAnimTimer) / 25;
+            float leftRippedY = ((float) currentRippingAnimTimer) / 16;
             PoseStack poseStack = graphics.pose();
             poseStack.pushPose();
-            //poseStack.rotateAround(Quaternionf., this.x / 2, this.y / 2, 0);
-            graphics.blit(TEXTURE, this.x - moveApart, leftYAnim, 119, 0, 39, this.height, 512, 256);
+            poseStack.translate(leftRippedX, leftRippedY, 0);
+            poseStack.rotateAround(new Quaternionf(0,0,0,0).setAngleAxis(-(float)currentRippingAnimTimer / 200.0f, 0, 0, 1), x + leftRippedX, y + leftRippedY, 0);
+            graphics.blit(TEXTURE, this.x, this.y, 119, 0, 39, this.height, 512, 256);
             poseStack.popPose();
 
             //Render right side of ripped ticket
             //Side side should move upwards and to right
-            int rightYAnim = this.y - currentRippingAnimTimer;
-            graphics.blit(TEXTURE, this.x + 40 + moveApart, leftYAnim, 186, 0, 58, this.height, 512, 256);
+            float rightRippedX = ((float) currentRippingAnimTimer) / 32;
+            float rightRippedY = ((float) currentRippingAnimTimer) / 16;
 
+            poseStack.pushPose();
+            poseStack.translate(rightRippedX, rightRippedY, 0);
+            poseStack.rotateAround(new Quaternionf(0,0,0,0).setAngleAxis((float)currentRippingAnimTimer / 250.0f, 0, 0, 1), this.x + rightRippedX, this.y + rightRippedY, 0);
+            graphics.blit(TEXTURE, this.x + 40, this.y, 186, 0, 58, this.height, 512, 256);
+            poseStack.popPose();
+
+            RenderSystem.disableBlend();
 
 
 
@@ -220,6 +236,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             {
                 //RIP TICKET
                 currentRippingAnimTimer = 0;
+
             }
 
             //Reset all Ripping Variables

@@ -1,7 +1,16 @@
 package com.qsmium.createreturnticket;
 
+import com.qsmium.createreturnticket.gui.TransitOverlay;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
+import com.simibubi.create.Create;
+import com.simibubi.create.content.trains.GlobalRailwayManager;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
+import com.simibubi.create.content.trains.entity.Train;
+import com.simibubi.create.content.trains.graph.TrackGraph;
+import com.simibubi.create.content.trains.schedule.Schedule;
+import com.simibubi.create.content.trains.schedule.ScheduleEntry;
+import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
+import com.simibubi.create.content.trains.schedule.destination.ScheduleInstruction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -94,22 +103,71 @@ public class ModMain
                     return;
                 }
 
-                //If a Player enters a train the behavior has to be different
-                //Ifa Player enters a train we have to
+                //If a Player enters a train the behavior has to be:
+                // - Does the Player have an existing Return Ticket?
+                //    => If no Give them one and validate it => Save Enter Location
+                //    => If yes
+                //       - Check if new Enter Location is Valid
+                //           => If yes validate ticket just to make sure
+                //           => If no invalidate ticket
                 // - Check if the Player already has a valid Enter Location / ripped their Return Ticket
                 // - If yes do nothing
                 // - If not Save Enter Location & Set new Valid Enter Location / un-rip Return Ticket
                 // -
-                if (event.isMounting() && returnTicket.isReturnTicketRipped())
+                if (event.isMounting())
                 {
-                    returnTicket.un_ripReturnTicket();
-                    returnTicket.setEnterLocation(player.getPosition(0));
+                    //Debug
+                    //GlobalRailwayManager railwayManager = GlobalRailwayManager.
+                    Train currentTrain = Create.RAILWAYS.trains.get(carriage.trainId);
+
+                    Schedule schedule = currentTrain.runtime.getSchedule();
+                    if(schedule != null)
+                    {
+                        ScheduleEntry currentEntry = schedule.entries.get(currentTrain.runtime.currentEntry);
+                        ScheduleInstruction instruction = currentEntry.instruction;
+
+                        if (instruction instanceof DestinationInstruction destination)
+                        {
+                            String regex = destination.getFilterForRegex();
+
+                            player.displayClientMessage(Component.literal(regex).withStyle(ChatFormatting.DARK_RED), false);
+
+                        }
+                    }
+
+
+                    //Check if no Ticket exists => I.e is it ripped
+                    if(returnTicket.isReturnTicketRipped())
+                    {
+                        //Give new ticket and save enter location
+                        returnTicket.un_ripReturnTicket();
+                        returnTicket.setEnterLocation(player.getPosition(0));
+                    }
+
+                    //If a ticket does exist
+                    else
+                    {
+                        //Check for Ticket validity
+                        //Valid if Player is within Allowance Distance between previous exit location
+                        if(player.getPosition(0).distanceTo(returnTicket.getExitLocation()) < 120)
+                        {
+                            //If valid then validate ticket just to make sure
+                            returnTicket.validateTicket();
+                        }
+
+                        //If invalid
+                        else
+                        {
+                            player.displayClientMessage(Component.literal("Your Return Ticket is invalid. This Journey will not Count. Consider ripping your Ticket"), true);
+                            returnTicket.invalidateTicket();
+                        }
+                    }
                 }
 
                 //If a Player exits a train we have to
                 // - Save the Exit location
                 // - Notify Player of new Exit Location
-                if (event.isDismounting())
+                if (event.isDismounting() && returnTicket.isValid())
                 {
                     //Save new Exit Location
                     returnTicket.setExitLocation(player.getPosition(0));
@@ -129,7 +187,15 @@ public class ModMain
                 ServerPlayer player = (ServerPlayer) event.getEntity();
                 TicketManager.tryRedeemTicket(player);
             }
+
+            if(event.getItemStack().is(ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft", "stone"))) && event.getEntity() instanceof ServerPlayer)
+            {
+                TransitOverlay.startAnimation = true;
+            }
+
         }
+
+
 
 
     }
