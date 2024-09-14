@@ -56,6 +56,7 @@ public class TransitOverlay
 
         //Arrow Stuff
         private static int arrowY = 100;
+        private static int arrowMiddle = 100;
 
 
         @Override
@@ -68,15 +69,19 @@ public class TransitOverlay
                 animationRunning = true;
 
                 arrowY = screenHeight / 8;
+                arrowMiddle = arrowY + (ARROW_UV_HEIGHT / 2);
                 currentAnimCycle = 0;
                 currentAnimTime = 0;
                 animationState = 1;
+                globalAnimTime = 0;
+
             }
 
             if(!animationRunning)
             {
                 return;
             }
+
 
             //guiGraphics.blit(ReturnTicketWindow.TEXTURE, 0, 0, 0, 100, 150, 150, 512, 256);
             //animateArrowToDirection(guiGraphics, partialTick);
@@ -112,7 +117,7 @@ public class TransitOverlay
 
                     //Move in FullScreenCovers
                     //Because they are stencils for everything coming after they need to be drawn now
-                    animateFullscreenCovers(guiGraphics, partialTick, 1, screenWidth,screenHeight);
+                    animateFullscreenCovers(guiGraphics, partialTick, 0.2f, screenWidth,screenHeight);
 
 
 
@@ -135,12 +140,24 @@ public class TransitOverlay
         {
             PoseStack poseStack = guiGraphics.pose();
 
+            float coversYScale = ((globalAnimTime * animSpeed) % 50) * 0.1f;
+
+
             poseStack.pushPose();
+            Util.SafeScale(poseStack, 100, coversYScale, -10, arrowMiddle);
+            guiGraphics.blit(MASK_TEX, -10, arrowMiddle, 0, 0, 256, 256, 256, 256);
+            poseStack.popPose();
 
-            guiGraphics.blit(MASK_TEX, 50, 50, 0, 0, 256, 256, 256, 256);
-
-            poseStack.pushTransformation(new Transformation(new Vector3f(0,0,0), new Quaternionf(0, 0, 0, 0), new Vector3f(2, 0.5f, 3), new Quaternionf(0,0,0,0)));
-
+            poseStack.pushPose();
+            //Util.SafeScale(poseStack, 1, -1, 50, 50);
+            //Util.SafeScale(poseStack, 100, -coversYScale, -10, arrowMiddle, 256, 256);
+            Util.SafeScale(poseStack, 100, -coversYScale, -10, arrowMiddle, 256, 256);
+            //poseStack.translate(-10, (-arrowMiddle) * 0.1f, 0);
+            //poseStack.scale(1, 0.1f, 1);
+            //poseStack.translate(10, arrowMiddle / 0.1f, 0);
+            //poseStack.translate(((globalAnimTime * 0.5f) % 1000) - 500, (globalAnimTime % 1000) - 500, 0);
+            //poseStack.translate(globalAnimTime % 200, (globalAnimTime / 2) % 200, 0);
+            guiGraphics.blit(MASK_TEX, -10, arrowMiddle, 0, 0, 256, 256, 256, 256);
             poseStack.popPose();
 
             return false;

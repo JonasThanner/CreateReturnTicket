@@ -106,7 +106,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         Util.setupStencilMask();
         RenderSystem.setShaderTexture(0, TEST_MASK);
         //RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        graphics.blit(TEST_MASK, x, y, 0, 100, width, height, 512, 256);
+        graphics.blit(TEST_MASK, x, y + 20, 0, 100, width, height, 512, 256);
 
         // Enable blending for transparency
 
@@ -125,7 +125,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         closeButton.renderWidget(graphics, mouseX, mouseY, delta);
 
         //Handle Ticket Rendering
-        ticketWidget.renderWidget(graphics, mouseX, mouseY, delta);
+        //ticketWidget.renderWidget(graphics, mouseX, mouseY, delta);
 
         // Pop the pose to restore the previous state
         poseStack.popPose();

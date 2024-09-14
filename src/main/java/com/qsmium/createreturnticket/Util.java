@@ -18,6 +18,32 @@ public class Util
         return Math.max(min, Math.min(max, value));
     }
 
+    public static void SafeScale(PoseStack poseStack, float scaleX, float scaleY, float originX, float originY)
+    {
+        SafeScale(poseStack, scaleX, scaleY, originX, originY, 0, 0);
+    }
+    public static void SafeScale(PoseStack poseStack, float scaleX, float scaleY, float originX, float originY, float texSizeX, float texSizeY)
+    {
+        //Adjust for negative scales => fake negative scaling and then offsetting
+        float offsetX = scaleX < 0 ? texSizeX * scaleX : 0;
+        float offsetY = scaleY < 0 ? texSizeY * Math.abs(scaleY) : 0;
+
+        //Make scales normal
+        scaleX = Math.abs(scaleX);
+        scaleY = Math.abs(scaleY);
+
+
+        //Do all normal translations
+        // Translate to the anchor point before scaling
+        poseStack.translate(originX * scaleX, -(originY * scaleY), 0);
+
+        // Apply the scaling
+        poseStack.scale(scaleX, scaleY, 1.0F);
+
+        // Translate back to the original position after scaling
+        poseStack.translate(-originX, ((-(offsetY) + originY) / scaleY), 0);
+    }
+
     public static void setupStencilMask()
     {
         // Reset stencil state and clear stencil buffer
