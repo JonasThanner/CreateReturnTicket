@@ -1,24 +1,18 @@
 package com.qsmium.createreturnticket.gui;
 
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Transformation;
 import com.qsmium.createreturnticket.ModMain;
-import com.qsmium.createreturnticket.TicketManager;
 import com.qsmium.createreturnticket.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import javax.swing.*;
 
@@ -26,7 +20,9 @@ import javax.swing.*;
 public class TransitOverlay
 {
     public static final ResourceLocation MASK_TEX = new ResourceLocation(ModMain.MODID,"textures/mask.png");
+    public static final ResourceLocation BACKGROUND_TEX = new ResourceLocation(ModMain.MODID,"textures/background.png");
 
+    public static final ResourceLocation AXOLOTL_TEX = new ResourceLocation(ModMain.MODID,"textures/axolotl_transit_animation.png");
     public static boolean startAnimation = false;
     public static Action teleportStart;
 
@@ -46,12 +42,19 @@ public class TransitOverlay
         private static final int ARROW_UV_WIDTH = 50;
         private static final int ARROW_UV_HEIGHT = 18;
         private static final int ARROW_TIP_UV_WIDTH = 12;
+        private static final int BACKGROUND_UV_SIZE = 256;
+        private static final int AXOLOTL_UV_WIDTH = 162;
+        private  static final int AXOLOTL_UV_HEIGHT = 72;
+        private static final int CLOSER_UV_SIZE = 50;
 
 
         private static int animationState = 1;
         private static float globalAnimTime = 0; //For Tracking how long during the entire animation stage
         private static float currentAnimTime = 0; //Tracking how long inside each animation function
-        private static int currentAnimCycle = 0; //Tracking what cycle of animation the arrow anim is currently in
+        private static int arrowAnimCycle = 0; //Tracking what cycle of animation the arrow anim is currently in
+        private static int axolotlAnimCycle = 0; //Needed for the Axolotl Animation
+        private static float axolotlAnimTime = 0;
+        private static boolean axolotlAnimPingPongDecrease = false;
         private static boolean animationRunning = false;
 
         //Arrow Stuff
@@ -70,7 +73,7 @@ public class TransitOverlay
 
                 arrowY = screenHeight / 8;
                 arrowMiddle = arrowY + (ARROW_UV_HEIGHT / 2);
-                currentAnimCycle = 0;
+                arrowAnimCycle = 0;
                 currentAnimTime = 0;
                 animationState = 1;
                 globalAnimTime = 0;
@@ -114,10 +117,25 @@ public class TransitOverlay
                     globalAnimTime += partialTick;
 
 
-
                     //Move in FullScreenCovers
                     //Because they are stencils for everything coming after they need to be drawn now
-                    animateFullscreenCovers(guiGraphics, partialTick, 0.2f, screenWidth,screenHeight);
+                    Util.setupStencilMask();
+                    RenderSystem.setShaderTexture(0, MASK_TEX);
+                    if(animateFullscreenCovers(guiGraphics, partialTick, 0.2f, screenWidth,screenHeight))
+                    {
+                        globalAnimTime = 0;
+                        animationState = 3;
+                    }
+
+                    Util.setupStencilTexture();
+                    RenderSystem.setShaderTexture(0, BACKGROUND_TEX);
+                    animateBackground(guiGraphics, partialTick, 0.3f, screenWidth, screenHeight);
+
+                    RenderSystem.setShaderTexture(0, AXOLOTL_TEX);
+                    //Animate Axolotl
+                    animateAxolotl(guiGraphics, partialTick, 8f, screenWidth , screenHeight);
+
+                    Util.disableStencil();
 
 
 
@@ -128,6 +146,53 @@ public class TransitOverlay
                     break;
 
                 case 3:
+
+                    globalAnimTime += partialTick;
+
+                    if(globalAnimTime > 200)
+                    {
+                        animationState = 4;
+                        globalAnimTime = 0;
+                    }
+
+
+                    //animate Background
+                    animateBackground(guiGraphics, partialTick, 0.3f, screenWidth, screenHeight);
+
+                    //Animate Axolotl
+                    animateAxolotl(guiGraphics, partialTick, 8f, screenWidth , screenHeight);
+
+                    //Draw Animating Arrows
+                    animateArrowToDirection(guiGraphics, partialTick, screenWidth);
+
+
+
+                    break;
+
+                case 4:
+
+                    globalAnimTime += partialTick;
+
+
+                    //Animate closing
+                    Util.setupStencilMask();
+                    RenderSystem.setShaderTexture(0, ReturnTicketWidget.TEXTURE);
+                    animateCloser(guiGraphics, partialTick, 1f,screenWidth, screenHeight);
+
+                    Util.setupStencilTexture();
+                    RenderSystem.setShaderTexture(0, BACKGROUND_TEX);
+                    animateBackground(guiGraphics, partialTick, 0.3f, screenWidth, screenHeight);
+
+                    //Animate Axolotl
+                    RenderSystem.setShaderTexture(0, AXOLOTL_TEX);
+                    animateAxolotl(guiGraphics, partialTick, 8f, screenWidth , screenHeight);
+
+                    //Draw Animating Arrows
+                    RenderSystem.setShaderTexture(0, ReturnTicketWidget.TEXTURE);
+                    animateArrowToDirection(guiGraphics, partialTick, screenWidth);
+
+                    Util.disableStencil();
+
 
                     break;
             }
@@ -143,25 +208,108 @@ public class TransitOverlay
             float coversYScale = ((globalAnimTime * animSpeed) % 50) * 0.1f;
 
 
+            //================ Upper Covers ===========================
             poseStack.pushPose();
             Util.SafeScale(poseStack, 100, coversYScale, -10, arrowMiddle);
             guiGraphics.blit(MASK_TEX, -10, arrowMiddle, 0, 0, 256, 256, 256, 256);
             poseStack.popPose();
 
             poseStack.pushPose();
-            //Util.SafeScale(poseStack, 1, -1, 50, 50);
-            //Util.SafeScale(poseStack, 100, -coversYScale, -10, arrowMiddle, 256, 256);
             Util.SafeScale(poseStack, 100, -coversYScale, -10, arrowMiddle, 256, 256);
-            //poseStack.translate(-10, (-arrowMiddle) * 0.1f, 0);
-            //poseStack.scale(1, 0.1f, 1);
-            //poseStack.translate(10, arrowMiddle / 0.1f, 0);
-            //poseStack.translate(((globalAnimTime * 0.5f) % 1000) - 500, (globalAnimTime % 1000) - 500, 0);
-            //poseStack.translate(globalAnimTime % 200, (globalAnimTime / 2) % 200, 0);
             guiGraphics.blit(MASK_TEX, -10, arrowMiddle, 0, 0, 256, 256, 256, 256);
             poseStack.popPose();
+            //================ Upper Covers ===========================
+
+            if(coversYScale >= 48.0f * 0.1f)
+            {
+                return  true;
+            }
 
             return false;
 
+        }
+
+        //Animates the circle that gets bigger and bigger to end the transit animation
+        public static boolean animateCloser(GuiGraphics guiGraphics, float partialTick, float animSpeed, int screenWidth, int screenHeight)
+        {
+            //Calculate current Scale
+            float scale = (globalAnimTime / (100 / animSpeed)) * 20;
+
+            PoseStack poseStack = guiGraphics.pose();
+
+
+            poseStack.pushPose();
+
+            //Scale the closer circle
+            Util.SafeScaleFromMiddle(poseStack, scale, scale, (screenWidth / 2) - (CLOSER_UV_SIZE / 2), (screenHeight / 2) - (CLOSER_UV_SIZE / 2), CLOSER_UV_SIZE, CLOSER_UV_SIZE);
+
+            //Draw Closer Circle
+            guiGraphics.blit(ReturnTicketWidget.TEXTURE, (screenWidth / 2) - (CLOSER_UV_SIZE / 2), (screenHeight / 2) - (CLOSER_UV_SIZE / 2), 301, 100, CLOSER_UV_SIZE, CLOSER_UV_SIZE, 512, 256);
+            poseStack.popPose();
+
+            //Check if animation is run
+
+
+
+            return false;
+        }
+
+        public static void animateAxolotl(GuiGraphics guiGraphics, float partialTick, float animSpeed, int screenWidth, int screenHeight)
+        {
+            //The Timings of each of the Axolotl Animation frames
+            // => In total 9 Frames
+            int[] frameTimes = {100, 100, 50, 40, 30, 40, 50, 100, 100};
+
+            axolotlAnimTime += partialTick;
+
+            //Going to next Frame Logic
+            if(axolotlAnimTime > frameTimes[axolotlAnimCycle] / animSpeed)
+            {
+                axolotlAnimTime = 0;
+
+                //Ping pong
+                // => If decreasing animState we check if when subtracting we are below 0
+                // => If increasing animState we check if when adding we are above 8
+
+                axolotlAnimCycle = axolotlAnimPingPongDecrease ? axolotlAnimCycle - 1 : axolotlAnimCycle + 1;
+
+                //Revert behavior if at ping pong point
+                if(axolotlAnimCycle > 8 || axolotlAnimCycle < 0)
+                {
+                    axolotlAnimCycle = axolotlAnimPingPongDecrease ? axolotlAnimCycle + 2: axolotlAnimCycle - 2;
+                    axolotlAnimPingPongDecrease = !axolotlAnimPingPongDecrease;
+                }
+            }
+
+            //Calculate Axolotl Draw Position
+            // => Should be so that Axoltl is at center of screen
+            int axoX = (screenWidth / 2) - (AXOLOTL_UV_WIDTH / 2);
+            int axoY = (screenHeight / 2) - (AXOLOTL_UV_HEIGHT / 2);
+
+            //Calculate AxolotlUV Coordinates
+            int axoUVX = AXOLOTL_UV_WIDTH * ((axolotlAnimCycle) % 3);
+            int axoUVY = AXOLOTL_UV_HEIGHT * (int) (Math.floor((double) axolotlAnimCycle) / 3.0);
+
+            //Drawing Axolotl
+            guiGraphics.blit(AXOLOTL_TEX, axoX, axoY, axoUVX, axoUVY, AXOLOTL_UV_WIDTH, AXOLOTL_UV_HEIGHT, 512, 256);
+
+
+        }
+
+        public static boolean animateBackground(GuiGraphics guiGraphics, float partialTick, float animSpeed, int screenWidth, int screenHeight)
+        {
+            //Frame count for background is 15
+            int animPos = (int) Math.floor((double) (globalAnimTime * animSpeed) % 15);
+
+
+            PoseStack poseStack = guiGraphics.pose();
+
+
+
+            Util.drawRepatingBlit(guiGraphics, BACKGROUND_TEX, -16 + animPos, -16 + animPos, 0, 0, 256, 256, 256, 256, 4, 4);
+
+
+            return false;
         }
 
         public static boolean arrowSlideInAnim(GuiGraphics guiGraphics, float partialTick, float animSpeed, int screenWidth, int screenHeight)
@@ -205,15 +353,15 @@ public class TransitOverlay
             if(currentAnimTime > 5)
             {
                 currentAnimTime = 0;
-                currentAnimCycle++;
-                if(currentAnimCycle > 9)
+                arrowAnimCycle++;
+                if(arrowAnimCycle > 9)
                 {
-                    currentAnimCycle = 0;
+                    arrowAnimCycle = 0;
                 }
             }
 
             //Draw anim Cycle
-            Util.drawRepatingBlit(guiGraphics, ReturnTicketWindow.TEXTURE, 0 + currentAnimCycle - ARROW_UV_WIDTH, arrowY, 178, 133, 50, 18, 512, 256, (screenWidth / ARROW_UV_WIDTH) + 2, 1);
+            Util.drawRepatingBlit(guiGraphics, ReturnTicketWindow.TEXTURE, 0 + arrowAnimCycle - ARROW_UV_WIDTH, arrowY, 178, 133, 50, 18, 512, 256, (screenWidth / ARROW_UV_WIDTH) + 2, 1);
 
 
         }

@@ -25,7 +25,7 @@ public class Util
     public static void SafeScale(PoseStack poseStack, float scaleX, float scaleY, float originX, float originY, float texSizeX, float texSizeY)
     {
         //Adjust for negative scales => fake negative scaling and then offsetting
-        float offsetX = scaleX < 0 ? texSizeX * scaleX : 0;
+        float offsetX = scaleX < 0 ? texSizeX * Math.abs(scaleX) : 0;
         float offsetY = scaleY < 0 ? texSizeY * Math.abs(scaleY) : 0;
 
         //Make scales normal
@@ -41,7 +41,45 @@ public class Util
         poseStack.scale(scaleX, scaleY, 1.0F);
 
         // Translate back to the original position after scaling
-        poseStack.translate(-originX, ((-(offsetY) + originY) / scaleY), 0);
+        poseStack.translate((((offsetX) - originX) / scaleX), ((-(offsetY) + originY) / scaleY), 0);
+    }
+
+    //Works with X Scaling
+    //TODO: Merge into one function
+    public static void SafeScale2(PoseStack poseStack, float scaleX, float scaleY, float originX, float originY, float texSizeX, float texSizeY)
+    {
+        // Adjust for negative scales => fake negative scaling and then offsetting
+        float offsetX = scaleX < 0 ? texSizeX * Math.abs(scaleX) : 0;
+        float offsetY = scaleY < 0 ? texSizeY * Math.abs(scaleY) : 0;
+
+        // Normalize scales (to make sure scale values are positive)
+        scaleX = Math.abs(scaleX);
+        scaleY = Math.abs(scaleY);
+
+        // Translate to the anchor point before scaling
+        poseStack.translate(originX, originY, 0);
+
+        // Apply the scaling
+        poseStack.scale(scaleX, scaleY, 1.0F);
+
+        // Translate back to the original position after scaling
+        // This compensates for both scaling directions
+        poseStack.translate((offsetX - originX * scaleX) / scaleX, (offsetY - originY * scaleY) / scaleY, 0);
+    }
+
+    public static void SafeScaleFromMiddle(PoseStack poseStack, float scaleX, float scaleY, float originX, float originY, float texSizeX, float texSizeY)
+    {
+        //To animate from middle we need to take the tex size, multiply by the scaling of x and y
+        //Scale, and then translate it by the appropriate amount so its as if it was scaled from the middle
+        // => We need to translate the scaled object to the top left by 1/2 of the change in size between the unscaled and scaled object
+
+        //First we do the original translation
+        SafeScale2(poseStack, scaleX, scaleY, originX, originY, texSizeX, texSizeY);
+
+        //Then the translation adjustment
+        float offsetX = ((texSizeX * scaleX) - (texSizeX)) / 2.0f;
+        float offsetY = ((texSizeY * scaleY) - (texSizeY)) / 2.0f;
+        poseStack.translate(-offsetX / scaleX, -offsetY / scaleY, 0);
     }
 
     public static void setupStencilMask()
