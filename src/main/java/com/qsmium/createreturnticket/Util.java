@@ -102,11 +102,16 @@ public class Util
 
     public static void setupStencilTexture()
     {
+        setupStencilTexture(GL11.GL_KEEP);
+    }
+
+    public static void setupStencilTexture(int equalCond)
+    {
         // Setup for color buffer filling
         GL11.glEnable(GL11.GL_STENCIL_TEST);
         RenderSystem.stencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
         RenderSystem.stencilMask(0);
-        RenderSystem.stencilFunc(GL11.GL_EQUAL, 1, 0xFF);
+        RenderSystem.stencilFunc(equalCond, 1, 0xFF);
         RenderSystem.colorMask(true, true, true, true);
         RenderSystem.depthMask(true);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

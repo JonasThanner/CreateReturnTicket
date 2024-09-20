@@ -13,6 +13,7 @@ import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.lwjgl.opengl.GL11;
 
 import javax.swing.*;
 
@@ -177,9 +178,15 @@ public class TransitOverlay
                     //Animate closing
                     Util.setupStencilMask();
                     RenderSystem.setShaderTexture(0, ReturnTicketWidget.TEXTURE);
-                    animateCloser(guiGraphics, partialTick, 1f,screenWidth, screenHeight);
+                    if(animateCloser(guiGraphics, partialTick, 1f,screenWidth, screenHeight))
+                    {
+                        animationRunning = false;
+                        Util.setupStencilTexture(GL11.GL_NOTEQUAL);
+                        Util.disableStencil();
+                        break;
+                    }
 
-                    Util.setupStencilTexture();
+                    Util.setupStencilTexture(GL11.GL_NOTEQUAL);
                     RenderSystem.setShaderTexture(0, BACKGROUND_TEX);
                     animateBackground(guiGraphics, partialTick, 0.3f, screenWidth, screenHeight);
 
@@ -248,6 +255,10 @@ public class TransitOverlay
             poseStack.popPose();
 
             //Check if animation is run
+            if(globalAnimTime >= 100)
+            {
+                return true;
+            }
 
 
 

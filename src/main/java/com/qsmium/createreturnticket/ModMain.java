@@ -140,8 +140,10 @@ public class ModMain
                     if(returnTicket.isReturnTicketRipped())
                     {
                         //Give new ticket and save enter location
+                        //And also validate the ticket at the beginning of the journey
                         returnTicket.un_ripReturnTicket();
                         returnTicket.setEnterLocation(player.getPosition(0));
+                        returnTicket.validateTicket();
                     }
 
                     //If a ticket does exist

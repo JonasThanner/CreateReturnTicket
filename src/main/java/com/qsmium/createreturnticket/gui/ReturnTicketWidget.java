@@ -24,6 +24,8 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 {
 
     public static final ResourceLocation TEXTURE = new ResourceLocation(ModMain.MODID,"textures/return_ticket.png");
+    public static final int RETURN_TICKET_UV_WIDTH = 98;
+    public static final int RETURN_TICKET_UV_HEIGHT = 50;
     private final Minecraft client;
     private final int x;
     private final int y;
@@ -72,6 +74,9 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
         if (!active) return;
 
 
+
+
+        PoseStack poseStack = graphics.pose();
 
         // Bind the texture
         //Minecraft.getInstance().getTextureManager().bindTexture(TEXTURE);
@@ -148,7 +153,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 
             float leftRippedX = ((float) currentRippingAnimTimer) / 25;
             float leftRippedY = ((float) currentRippingAnimTimer) / 16;
-            PoseStack poseStack = graphics.pose();
+            //PoseStack poseStack = graphics.pose();
             poseStack.pushPose();
             poseStack.translate(leftRippedX, leftRippedY, 0);
             poseStack.rotateAround(new Quaternionf(0,0,0,0).setAngleAxis(-(float)currentRippingAnimTimer / 200.0f, 0, 0, 1), x + leftRippedX, y + leftRippedY, 0);
@@ -181,9 +186,9 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
         else
         {
             //Draw the part of the ticket that gets ripped apart => Ripping of
-            graphics.blit(TEXTURE, this.x, this.y, 51 * currentRipStage, 174, 51, this.height, 512, 256);
+            graphics.blit(TEXTURE, this.x, this.y, 51 * currentRipStage, 184, 51, this.height, 512, 256);
 
-            // Draw the part of the ticket thats static
+            //Draw the part of the ticket thats static
             graphics.blit(TEXTURE, this.x + 51, this.y, 20 + 51, 0, this.width - 31 - 51, this.height, 512, 256);
 
             //Draw the actual part of the ticket that gets ripped off => Redeeming
@@ -236,7 +241,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             {
                 //RIP TICKET
                 currentRippingAnimTimer = 0;
-
+                ReturnTicketWindow.activeTicket = false;
             }
 
             //Reset all Ripping Variables
@@ -263,11 +268,11 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
         return false;
     }
 
-//    //Required to not draw tooltips for items in the crafting interface
-//    @Override
-//    public boolean isMouseOver(double mouseX, double mouseY) {
-//        return mouseX >= x && mouseX <= x + 37 && mouseY >= y && mouseY <= y + 57 && active;
-//    }
+    //Required to not draw tooltips for items in the crafting interface
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return mouseX >= x && mouseX <= x + RETURN_TICKET_UV_WIDTH && mouseY >= y && mouseY <= y + RETURN_TICKET_UV_HEIGHT && active;
+    }
 
     public void toggleActive() {
         active = !active;

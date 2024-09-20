@@ -38,6 +38,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     private final int height;
 
     private boolean active = false;
+    public static boolean activeTicket = false;
     //private final List<Button> buttons = new ArrayList<>();
     private boolean mousePressed = false;
     private int currentRipStage = 0;
@@ -103,29 +104,23 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         poseStack.pushPose();
         poseStack.translate(0, 0, 200);
 
-        Util.setupStencilMask();
-        RenderSystem.setShaderTexture(0, TEST_MASK);
-        //RenderSystem.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        graphics.blit(TEST_MASK, x, y + 20, 0, 100, width, height, 512, 256);
-
-        // Enable blending for transparency
-
-
-
-        Util.setupStencilTexture();
-        RenderSystem.setShaderTexture(0, TEXTURE);
-
-        //RenderSystem.blendFunc(GlStateManager.SourceFactor.DST_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         //Draw main texture of the window
         graphics.blit(TEXTURE, x, y, 0, 100, width, height, 512, 256);
 
-        Util.disableStencil();
+
+        //Draw Graphics if theres no active ticket
+
 
         //Draw close button
         closeButton.renderWidget(graphics, mouseX, mouseY, delta);
 
-        //Handle Ticket Rendering
-        //ticketWidget.renderWidget(graphics, mouseX, mouseY, delta);
+        //Handle Ticket Rendering => Only if we have an active ticket
+        if(activeTicket)
+        {
+            ticketWidget.renderWidget(graphics, mouseX, mouseY, delta);
+        }
+
+
 
         // Pop the pose to restore the previous state
         poseStack.popPose();
@@ -216,6 +211,9 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         ticketWidget.toggleActive();
         active = !active;
         setFocused(active);
+
+        //Check new Ticket Status
+        ReturnTicketPacketHandler.requestTicketStatus();
     }
 
     @Override

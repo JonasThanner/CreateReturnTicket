@@ -44,4 +44,17 @@ public class TicketManager
         return true;
 
     }
+
+    //Function to call if you want to know if the player has an active ticket
+    public static boolean hasTicket(ServerPlayer player)
+    {
+        //Get ReturnTicket
+        ReturnTicketData returnTicket = player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
+
+        //Return if no Ticket Capability found
+        if(returnTicket == null)
+            return false;
+
+        return !returnTicket.isReturnTicketRipped();
+    }
 }

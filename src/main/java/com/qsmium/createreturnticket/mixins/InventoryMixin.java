@@ -31,12 +31,12 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
     private ReturnTicketWindow returnTicketWidget;
 
     @Inject(method = "init", at = @At("TAIL"), remap = false)
-    public void addButton(CallbackInfo ci) {
+    public void init(CallbackInfo ci) {
         //int purseX = ExampleClientConfig.CLIENT.pursePositionX.get();
         //int purseY = ExampleClientConfig.CLIENT.pursePositionY.get();
 
         //The Actual Widget that houses the Return Ticket Image
-        returnTicketWidget = new ReturnTicketWindow(this.leftPos + 5, this.topPos + 5, 165, 74, minecraft);
+        returnTicketWidget = new ReturnTicketWindow(this.leftPos + 5, this.topPos + 6, 166, 74, minecraft);
 
         returnTicketButton = new ReturnTicketButton(this.leftPos + 140, this.topPos + 60, button -> {
             returnTicketWidget.toggleActive();
