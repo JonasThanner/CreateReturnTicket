@@ -131,23 +131,11 @@ repositories {
         name = 'tterrag maven'
         url = 'https://maven.tterrag.com/'
     }
-
-    maven {
-        url = "https://api.modrinth.com/maven"
-    }
-
-    maven {
-        url "https://cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
-    }
-
 }
 
 dependencies {
 
-
+    implementation fg.deobf("curse.maven:flib-661261:${flib_file}")
     // Specify the version of Minecraft to use.
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
     // The "userdev" classifier will be requested and setup by ForgeGradle.
@@ -159,6 +147,10 @@ dependencies {
 
     // Apply Mixin AP
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
 
 
     //compileOnly fg.deobf("vazkii.patchouli:Patchouli:${minecraft_version}-${patchouli_version}-FORGE:api")
@@ -173,17 +165,16 @@ dependencies {
 
     //implementation fg.deobf("com.blamejared.crafttweaker:CraftTweaker-forge-${minecraft_version}:${crafttweaker_version}")
 
-
-
-    implementation fg.deobf("curse.maven:perfect-plushies-867232:5722444")
-    implementation fg.deobf("curse.maven:geckolib-388172:5675221")
+    implementation fg.deobf("com.simibubi.create:create-${create_minecraft_version}:${create_version}:slim") { transitive = false }
+    implementation fg.deobf("com.jozufozu.flywheel:flywheel-forge-${flywheel_minecraft_version}:${flywheel_version}")
+    implementation fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}")
 
 }
 
 mixin {
     // MixinGradle Settings
-    add sourceSets.main, 'perfectplushiesfix.refmap.json'
-    config 'perfectplushiesfix.mixins.json'
+    add sourceSets.main, 'createreturnticket.refmap.json'
+    config 'createreturnticket.mixins.json'
 
     debug.export = true
 }
