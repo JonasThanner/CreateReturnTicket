@@ -1,0 +1,11 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.qsmium.perfectplushiesfix.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "VillageLootModifierMixin"
+  ],
+  "client": [
+  ]
+}
