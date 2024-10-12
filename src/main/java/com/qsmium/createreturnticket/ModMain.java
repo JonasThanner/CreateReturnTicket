@@ -130,7 +130,14 @@ public class ModMain
                         {
                             String regex = destination.getFilterForRegex();
 
-                            player.displayClientMessage(Component.literal(regex).withStyle(ChatFormatting.DARK_RED), false);
+                            //Clip the Regex
+                            String filtered = regex.substring(2, regex.length() - 2);
+
+                            //Debug
+                            //TODO: Remove
+                            player.displayClientMessage(Component.literal(filtered).withStyle(ChatFormatting.DARK_RED), false);
+
+                            //Give the Client the New Destination
 
                         }
                     }

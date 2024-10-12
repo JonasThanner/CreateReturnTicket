@@ -66,7 +66,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
 
 
         //Add our TicketWidget
-        ticketWidget = new ReturnTicketWidget(x + 20, y + 15, 110, 50, client);
+        ticketWidget = new ReturnTicketWidget(x + 20, y + 12, 110, 50, client);
 
         //Add Close Button
         closeButton = new ImageButton(x + 150, y + 15, 7, 7, 0, 40, 0, TEXTURE, 512, 256, button -> {closeWindow();});
@@ -108,7 +108,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         graphics.blit(TEXTURE, x, y, 0, 100, width, height, 512, 256);
 
 
-        //Draw Graphics if theres no active ticket
+
 
 
         //Draw close button
@@ -119,6 +119,13 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         {
             ticketWidget.renderWidget(graphics, mouseX, mouseY, delta);
         }
+
+        //Draw Graphics if theres no active ticket
+        else
+        {
+            graphics.blit(TEXTURE, x + 25, y + 20, 409, 144, 102, 39, 512, 256);
+        }
+
 
 
 
