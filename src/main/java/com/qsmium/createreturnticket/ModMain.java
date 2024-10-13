@@ -1,5 +1,6 @@
 package com.qsmium.createreturnticket;
 
+import com.qsmium.createreturnticket.gui.NotificationOverlay;
 import com.qsmium.createreturnticket.gui.TransitOverlay;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import com.simibubi.create.Create;
@@ -194,7 +195,7 @@ public class ModMain
 
             if(event.getItemStack().is(ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft", "stone"))) && event.getEntity() instanceof ServerPlayer)
             {
-                TransitOverlay.startAnimation = true;
+                NotificationOverlay.addNotification(NotificationOverlay.Notfications.GENERIC);
             }
 
         }

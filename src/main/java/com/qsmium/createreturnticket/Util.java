@@ -137,5 +137,22 @@ public class Util
 
 
     }
+
+    public static int easeInOut(int start, int end, float progress) {
+        // Ensure progress is between 0 and 1
+        progress = Math.max(0, Math.min(progress, 1));
+
+        // Apply cubic easing: ease-in and ease-out
+        if (progress < 0.5) {
+            // First half (ease-in)
+            progress = 4 * progress * progress * progress;
+        } else {
+            // Second half (ease-out)
+            progress = 1 - (float) Math.pow(-2 * progress + 2, 3) / 2;
+        }
+
+        // Interpolate between start and end values
+        return Math.round(start + (end - start) * progress);
+    }
 }
 
