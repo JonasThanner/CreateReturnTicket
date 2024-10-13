@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.Util;
+import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -120,12 +121,17 @@ public class TransitOverlay
 
                     //Move in FullScreenCovers
                     //Because they are stencils for everything coming after they need to be drawn now
+                    //WHen this is done that means the entire screen is covered now
+                    // => Time to send the redeem request
                     Util.setupStencilMask();
                     RenderSystem.setShaderTexture(0, MASK_TEX);
                     if(animateFullscreenCovers(guiGraphics, partialTick, 0.2f, screenWidth,screenHeight))
                     {
                         globalAnimTime = 0;
                         animationState = 3;
+
+                        //Send Redeem Request
+                        ReturnTicketPacketHandler.sendRedeem();
                     }
 
                     Util.setupStencilTexture();

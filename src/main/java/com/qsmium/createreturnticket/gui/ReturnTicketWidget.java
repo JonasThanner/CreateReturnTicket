@@ -12,6 +12,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -231,9 +232,18 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
         {
 
             //Handle Ticket redemption
+            //This is the actual part where the ticket gets redemeed
             if(currentRedeemStage >= 8)
             {
-                ReturnTicketPacketHandler.sendRedeem();
+                //Close inventory screen
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.screen instanceof InventoryScreen) {
+                    mc.setScreen(null);  // Closes the screen
+                }
+
+                //Send Pre-Redeem Request
+                //Everything gets handled by the PacketHandler from here on
+                ReturnTicketPacketHandler.preRedeemTicket();
             }
 
             //Handle Ticket Ripping

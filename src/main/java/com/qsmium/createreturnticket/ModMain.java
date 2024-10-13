@@ -3,10 +3,8 @@ package com.qsmium.createreturnticket;
 import com.qsmium.createreturnticket.gui.TransitOverlay;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import com.simibubi.create.Create;
-import com.simibubi.create.content.trains.GlobalRailwayManager;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
 import com.simibubi.create.content.trains.entity.Train;
-import com.simibubi.create.content.trains.graph.TrackGraph;
 import com.simibubi.create.content.trains.schedule.Schedule;
 import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
@@ -15,10 +13,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerList;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -194,7 +189,7 @@ public class ModMain
             if(event.getItemStack().is(ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft", "stick"))) && event.getEntity() instanceof ServerPlayer)
             {
                 ServerPlayer player = (ServerPlayer) event.getEntity();
-                TicketManager.tryRedeemTicket(player);
+                TicketManager.tryRedeemTicketServerside(player);
             }
 
             if(event.getItemStack().is(ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft", "stone"))) && event.getEntity() instanceof ServerPlayer)
