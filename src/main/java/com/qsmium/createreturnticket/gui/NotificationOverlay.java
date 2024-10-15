@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
@@ -12,7 +13,7 @@ import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,8 @@ public class NotificationOverlay
         HIDDEN,
         SLIDING_IN,
         SLIDING_OUT,
+        EXPANDING_INFO_MINI,
+        CONTRACTING_INFO_MINI,
         STAYING_DEFAULT,
         EXPANDING_INFO,
         CONTRACTING_INFO,
@@ -49,6 +52,7 @@ public class NotificationOverlay
         GENERIC
     }
 
+    public static boolean expandInfoKeyClicked = false;
     public static List<Notfications> stackedNotifications = new ArrayList<Notfications>();
 
     @SubscribeEvent
@@ -60,12 +64,30 @@ public class NotificationOverlay
     private static class NotificationOverlayScreen implements IGuiOverlay
     {
 
-        public final int notificationUVx = 166;
-        public final int notificationUVy = 100;
-        public final int notificationWidthX = 134;
-        public final int notificationHeighY = 33;
-        public final int notificationDisplayHeight = 100;
-        public final float notificationStayLength = 120;
+        private final int notificationUVx = 166;
+        private final int notificationUVy = 100;
+        private final int notificationWidthX = 134;
+        private final int notificationHeighY = 31;
+        private final int notificationDisplayHeight = 100;
+        private final float notificationStayLength = 120;
+
+        private final int miniInfoReminderUVx = 470;
+        private final int miniInfoReminderUVy = 0;
+        private final int miniInfoWidthX = 23;
+        private final int miniInfoHeightY = 9;
+
+        private final int bigInfoTopUVx = 167;
+        private final int bigInfoTopUVy = 151;
+        private final int bigInfoTopWidthX = 118;
+        private final int bigInfoTopHeightY = 2;
+
+        private final int bigInfoMiddleUVx = 167;
+        private final int bigInfoMiddleUVy = 153;
+        private final int bigInfoMiddleHeightY = 23;
+
+        private final int bigInfoBottomUVx = 167;
+        private final int bigInfoBottomUVy = 176;
+        private final int bigInfoBottomHeightY = 8;
 
         public static NotifcationState currentAnimState = NotifcationState.HIDDEN;
         public static float currentAnimTime = 0;
@@ -108,7 +130,7 @@ public class NotificationOverlay
                 //The state changes to here are
                 // HIDDEN -> SLIDING_IN
                 //The state changes from here are
-                // SLIDING_IN -> STAYING_DEFAULT triggered automatically when the animation is done
+                // SLIDING_IN -> EXPANDING_INFO_MINI triggered automatically when the animation is done
                 //
                 //What needs to be done:
                 // - Render the Notification coming in from the right side
@@ -122,10 +144,73 @@ public class NotificationOverlay
                     int notificationX = Util.easeInOut(screenWidth, screenWidth - notificationWidthX, animDuration);
 
                     //Display notification
-                    guiGraphics.blit(ReturnTicketWidget.TEXTURE, notificationX, notificationDisplayHeight, notificationUVx, notificationUVy, notificationWidthX, notificationHeighY, 512, 256);
+                    drawTopNotification(guiGraphics, notificationX, notificationDisplayHeight);
+                    drawNotificationShadow(guiGraphics, notificationX, notificationDisplayHeight);
 
                     //Switch states
                     if(animDuration >= 1)
+                    {
+                        currentAnimTime = 0;
+                        currentAnimState = NotifcationState.EXPANDING_INFO_MINI;
+                    }
+
+
+                    break;
+
+                //The sliding out state is when the notifcation is done displaying and slides out
+                //The state changes to here are
+                // CONTRACTING_INFO_MINI -> SLIDING_OUT
+                //The state changes from here are
+                // SLIDING_OUT -> HIDDEN
+                //
+                //
+                case SLIDING_OUT:
+
+                    float animLength2 = 50;
+                    float animDuration2 = currentAnimTime / animLength2;
+                    int notificationX2 = Util.easeInOut(screenWidth - notificationWidthX, screenWidth, animDuration2);
+
+                    //Display notification
+                    drawTopNotification(guiGraphics, notificationX2, notificationDisplayHeight);
+                    drawNotificationShadow(guiGraphics, notificationX2, notificationDisplayHeight);
+
+                    //Switch states
+                    if(animDuration2 >= 1)
+                    {
+                        currentAnimTime = 0;
+                        currentAnimState = NotifcationState.HIDDEN;
+                    }
+
+                    break;
+
+
+                //Expanding info mini is for popping out the explainer that show the player the key to press to expand for more info
+                //The state changes to here are
+                // SLIDING_OUT -> EXPANDING_INFO_MINI
+                //The state changes from here are
+                // EXPANDING_INFO_MINI -> STAYING_DEFAULT
+                //
+                //What we need to do is
+                // - Render the normal notification where it is supposed to be
+                // - Expand out the Mini explainer image
+                case EXPANDING_INFO_MINI:
+
+                    //Display notification shadow
+                    drawNotificationShadow(guiGraphics, screenWidth - notificationWidthX, notificationDisplayHeight);
+
+                    //Pop out mini info
+                    float animLength3 = 20;
+                    float animDuration3 = currentAnimTime / animLength3;
+                    int miniY = Util.easeInOut(0, miniInfoHeightY, animDuration3);
+
+                    //Draw Mini notifcation
+                    drawMiniNotifier(guiGraphics, screenWidth - notificationWidthX + 6, notificationDisplayHeight + notificationHeighY - miniInfoHeightY + miniY);
+
+                    //Draw notification
+                    drawTopNotification(guiGraphics, screenWidth - notificationWidthX, notificationDisplayHeight);
+
+                    //Transition
+                    if(animDuration3 >= 1)
                     {
                         currentAnimTime = 0;
                         currentAnimState = NotifcationState.STAYING_DEFAULT;
@@ -134,49 +219,70 @@ public class NotificationOverlay
 
                     break;
 
-                //The sliding out state is when the notifcation is done displaying and slides out
+
+                //Contracting info mini is for hiding the explainer that shows the player the key they need to press to expand for more informationn
                 //The state changes to here are
-                // STAYING_DEFAULT -> SLIDING_OUT
+                // STAYING_DEFAULT -> CONTRACTING_INFO_MINI
                 //The state changes from here are
-                // SLIDING_OUT -> HIDDEN
+                // CONTRACTING_INFO_MINI -> SLIDING_OUT
                 //
                 //
-                case SLIDING_OUT:
+                case CONTRACTING_INFO_MINI:
 
-                    int notificationX2 = (int) (screenWidth - (notificationWidthX - currentAnimTime));
+                    //Display notf Shadow
+                    drawNotificationShadow(guiGraphics, screenWidth - notificationWidthX, notificationDisplayHeight);
 
-                    //Display notification
-                    guiGraphics.blit(ReturnTicketWidget.TEXTURE, notificationX2, notificationDisplayHeight, notificationUVx, notificationUVy, notificationWidthX, notificationHeighY, 512, 256);
+                    //Pop out mini info
+                    float animLength4 = 15;
+                    float animDuration4 = currentAnimTime / animLength4;
+                    int miniY2 = Util.easeInOut(miniInfoHeightY, 0, animDuration4);
 
-                    //Switch states
-                    if(notificationX2 >= screenWidth)
+                    //Draw Mini notifcation
+                    drawMiniNotifier(guiGraphics, screenWidth - notificationWidthX + 6, notificationDisplayHeight + notificationHeighY - miniInfoHeightY + miniY2);
+
+                    //Draw normal notification ontop
+                    drawTopNotification(guiGraphics, screenWidth - notificationWidthX, notificationDisplayHeight);
+
+                    //Transition
+                    if(animDuration4 >= 1)
                     {
                         currentAnimTime = 0;
-                        currentAnimState = NotifcationState.HIDDEN;
+                        currentAnimState = NotifcationState.SLIDING_OUT;
                     }
 
                     break;
 
+
+
                 //The staying default state is when the notification is shown and stays here for a while
                 //When the player wants more information we expand the info from here
                 //The state changes to here are
-                // SLIDING_IN -> STAYING_DEFAULT
+                // EXPANDING_INFO_MINI -> STAYING_DEFAULT
                 // CONTRACTING_INFO -> STAYING_DEFAULT
                 //The state changes from here are
-                // STAYING_DEFAULT -> SLIDING_OUT
+                // STAYING_DEFAULT -> CONTRACTING_INFO_MINI
                 // STAYING_DEFAULT -> EXPANDING_INFO
                 //
                 //
                 case STAYING_DEFAULT:
 
                     //Display notification
-                    guiGraphics.blit(ReturnTicketWidget.TEXTURE, screenWidth - notificationWidthX, notificationDisplayHeight, notificationUVx, notificationUVy, notificationWidthX, notificationHeighY, 512, 256);
+                    drawNotificationShadow(guiGraphics, screenWidth - notificationWidthX, notificationDisplayHeight);
+                    drawMiniNotifier(guiGraphics, screenWidth - notificationWidthX + 6, notificationDisplayHeight + notificationHeighY);
+                    drawTopNotification(guiGraphics, screenWidth - notificationWidthX, notificationDisplayHeight);
 
                     //Switch states
-                    if(currentAnimTime >= notificationStayLength)
+                    if(expandInfoKeyClicked)
                     {
                         currentAnimTime = 0;
-                        currentAnimState = NotifcationState.SLIDING_OUT;
+                        currentAnimState = NotifcationState.EXPANDING_INFO;
+                        break;
+                    }
+
+                    if (currentAnimTime >= notificationStayLength)
+                    {
+                        currentAnimTime = 0;
+                        currentAnimState = NotifcationState.CONTRACTING_INFO_MINI;
                     }
 
                     break;
@@ -188,8 +294,49 @@ public class NotificationOverlay
                 //The state changes from here are
                 // EXPANDING_INFO -> CONTRACTING_INFO
                 //
-                //
+                //To expand the info we need to
+                // - Render Notification Shadow
+                // - Render Mini Notification -> Make it disappear
+                // - Enable Stencil Texture
+                // - Render Mask as Stencil so that only the area under the notification is visible
+                // - Disable Stencil
+                // - Render Normal Notification
                 case EXPANDING_INFO:
+
+                    //Render Notification Shadow
+                    drawNotificationShadow(guiGraphics, screenWidth - notificationWidthX, notificationDisplayHeight);
+
+                    //Make Mini Notification Disappear
+                    float infoExMiniAnimLength = 15;
+                    float infoExMiniAnimDuration = currentAnimTime / infoExMiniAnimLength;
+                    infoExMiniAnimDuration = infoExMiniAnimDuration > 1 ? 1 : infoExMiniAnimDuration;
+                    int miniInfoExY = Util.easeInOut(notificationDisplayHeight + notificationHeighY, notificationDisplayHeight + notificationHeighY - miniInfoHeightY, infoExMiniAnimDuration);
+                    drawMiniNotifier(guiGraphics, screenWidth - notificationWidthX + 6, miniInfoExY);
+
+                    //Enable Stencil and draw it
+                    Util.setupStencilMask();
+                    RenderSystem.setShaderTexture(0, TransitOverlay.MASK_TEX);
+                    guiGraphics.blit(TransitOverlay.MASK_TEX, screenWidth - notificationWidthX, notificationDisplayHeight + notificationHeighY, 0, 0, 256, 256, 256, 256);
+
+                    //Draw Thingy that should be stenciled
+                    Util.setupStencilTexture(GL11.GL_EQUAL);
+                    RenderSystem.setShaderTexture(0, ReturnTicketWidget.TEXTURE);
+
+                    float infoExAnimLength = 30;
+                    float infoExAnimDuration = currentAnimTime / infoExAnimLength;
+                    int infoExY = Util.easeInOut(notificationDisplayHeight + notificationHeighY - bigInfoHeight(), notificationDisplayHeight + notificationHeighY, infoExAnimDuration);
+                    drawBigInfo(guiGraphics, screenWidth - notificationWidthX + 20, infoExY);
+                    Util.disableStencil();
+
+                    //Render Normal Notification
+                    drawTopNotification(guiGraphics, screenWidth - notificationWidthX, notificationDisplayHeight);
+
+                    if(infoExAnimDuration >= 1)
+                    {
+                        currentAnimTime = 0;
+                        currentAnimState = NotifcationState.STAYING_INFO;
+                    }
+
 
                     break;
 
@@ -203,6 +350,47 @@ public class NotificationOverlay
                 //
                 case CONTRACTING_INFO:
 
+                    //Has to be up here for minianim to use it
+                    float infoContrAnimLength = 30;
+
+                    //Render Notification Shadow
+                    drawNotificationShadow(guiGraphics, screenWidth - notificationWidthX, notificationDisplayHeight);
+
+                    //Make Mini Notification Disappear
+                    float infoContrMiniAnimLength = 15;
+                    float infoContrMiniAnimDuration = 0;
+                    if(currentAnimTime > infoContrAnimLength - infoContrMiniAnimLength)
+                    {
+                        infoContrMiniAnimDuration = (currentAnimTime - infoContrMiniAnimLength) / infoContrMiniAnimLength;
+                    }
+                    infoExMiniAnimDuration = infoContrMiniAnimDuration > 1 ? 1 : infoContrMiniAnimDuration;
+                    int miniInfoContrY = Util.easeInOut(notificationDisplayHeight + notificationHeighY - miniInfoHeightY, notificationDisplayHeight + notificationHeighY, infoExMiniAnimDuration);
+                    drawMiniNotifier(guiGraphics, screenWidth - notificationWidthX + 6, miniInfoContrY);
+
+                    //Enable Stencil and draw it
+                    Util.setupStencilMask();
+                    RenderSystem.setShaderTexture(0, TransitOverlay.MASK_TEX);
+                    guiGraphics.blit(TransitOverlay.MASK_TEX, screenWidth - notificationWidthX, notificationDisplayHeight + notificationHeighY, 0, 0, 256, 256, 256, 256);
+
+                    //Draw Thingy that should be stenciled
+                    Util.setupStencilTexture(GL11.GL_EQUAL);
+                    RenderSystem.setShaderTexture(0, ReturnTicketWidget.TEXTURE);
+
+
+                    float infoContrAnimDuration = currentAnimTime / infoContrAnimLength;
+                    int infoContrY = Util.easeInOut(notificationDisplayHeight + notificationHeighY, notificationDisplayHeight + notificationHeighY - bigInfoHeight(), infoContrAnimDuration);
+                    drawBigInfo(guiGraphics, screenWidth - notificationWidthX + 20, infoContrY);
+                    Util.disableStencil();
+
+                    //Render Normal Notification
+                    drawTopNotification(guiGraphics, screenWidth - notificationWidthX, notificationDisplayHeight);
+
+                    if(infoContrAnimDuration >= 1)
+                    {
+                        currentAnimTime = 0;
+                        currentAnimState = NotifcationState.STAYING_DEFAULT;
+                    }
+
                     break;
 
                 //The staying info state stays for as long as the player wants to look at the extra information
@@ -212,11 +400,93 @@ public class NotificationOverlay
                 // STAYING_INFO -> CONTRACTING_INFO
                 case STAYING_INFO:
 
+                    //Render notification shadow
+                    drawNotificationShadow(guiGraphics, screenWidth - notificationWidthX, notificationDisplayHeight);
+
+                    //Render notification info
+                    drawBigInfo(guiGraphics, screenWidth - notificationWidthX + 20, notificationDisplayHeight + notificationHeighY);
+
+                    //Render notification
+                    drawTopNotification(guiGraphics, screenWidth - notificationWidthX, notificationDisplayHeight);
+
+                    if(expandInfoKeyClicked)
+                    {
+                        currentAnimTime = 0;
+                    }
+
+                    if(currentAnimTime > notificationStayLength)
+                    {
+                        currentAnimTime = 0;
+                        currentAnimState = NotifcationState.CONTRACTING_INFO;
+                    }
+
                     break;
             }
 
             poseStack.popPose();
 
+        }
+
+        private void drawTopNotification(GuiGraphics guiGraphics, int x, int y)
+        {
+
+            //Draw Notification
+            guiGraphics.blit(ReturnTicketWidget.TEXTURE, x, y, notificationUVx, notificationUVy, notificationWidthX, notificationHeighY, 512, 256);
+
+            // Get Minecraft's font renderer
+            Font font = Minecraft.getInstance().font;
+
+            // Text you want to render
+            String text = "Hello, World! 12345";
+
+            // Color (white in this case)
+            int color = 0xFFFFFF;
+
+            // Render the text using the GuiGraphics object
+            guiGraphics.drawString(font, text, x + 6, y + 6, color, false);
+            guiGraphics.drawString(font, text, x + 6, y + 18, color, false);
+
+        }
+
+        private void drawMiniNotifier(GuiGraphics guiGraphics, int x, int y)
+        {
+            //Draw the actual notifier
+            guiGraphics.blit(ReturnTicketWidget.TEXTURE, x, y, miniInfoReminderUVx, miniInfoReminderUVy, miniInfoWidthX, miniInfoHeightY, 512, 256);
+
+        }
+
+        private void drawNotificationShadow(GuiGraphics guiGraphics, int x, int y)
+        {
+            guiGraphics.blit(ReturnTicketWidget.TEXTURE, x, y + notificationHeighY, notificationUVx, notificationUVy + notificationHeighY, notificationWidthX, 2, 512, 256);
+
+        }
+
+        //Function that draws the big info box
+        //To do so we have to:
+        // - Calculate how many middle sections we need based on how much text we need to display
+        // - Render Top
+        // - Render the necessary amount of middle sections
+        // - Render Bottom
+        private void drawBigInfo(GuiGraphics guiGraphics, int x, int y)
+        {
+            int neededMiddleSections = 1;
+
+            //Render Top
+            guiGraphics.blit(ReturnTicketWidget.TEXTURE, x, y, bigInfoTopUVx, bigInfoTopUVy, bigInfoTopWidthX, bigInfoTopHeightY, 512, 256);
+
+            //Render Necessary amound of middles
+            Util.drawRepatingBlit(guiGraphics, ReturnTicketWidget.TEXTURE, x, y + bigInfoTopHeightY, bigInfoMiddleUVx, bigInfoMiddleUVy, bigInfoTopWidthX, bigInfoMiddleHeightY, 512, 256, 1, neededMiddleSections);
+
+            //Render Bottom
+            guiGraphics.blit(ReturnTicketWidget.TEXTURE, x, y + bigInfoTopHeightY + (bigInfoMiddleHeightY * neededMiddleSections), bigInfoBottomUVx, bigInfoBottomUVy, bigInfoTopWidthX, bigInfoBottomHeightY, 512, 256);
+        }
+
+        //Function that calculates the height that the big notifier has to take up to accomodate all of the different
+        //Notifications that can exist
+        //TODO: Actually implement this functionality
+        private int bigInfoHeight()
+        {
+            return bigInfoTopHeightY + bigInfoMiddleHeightY + bigInfoBottomHeightY;
         }
     }
 
