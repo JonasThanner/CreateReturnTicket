@@ -15,17 +15,12 @@ import java.awt.*;
 public class BlockHighlightRenderer {
     private static float hue = 0.0f;
 
-    public static void renderHighlight(PoseStack poseStack, BlockPos pos, float partialTick) {
+    public static void renderHighlight(PoseStack poseStack, BlockPos pos, float partialTick, float alpha) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
 
         BlockAndTintGetter world = mc.level;
         BlockState state = world.getBlockState(pos);
-        if(state.isAir())
-        {
-            return;
-        }
-
         AABB aabb = state.getShape(world, pos).bounds().move(pos);
 
         double camX = mc.gameRenderer.getMainCamera().getPosition().x;
@@ -44,7 +39,7 @@ public class BlockHighlightRenderer {
 
         poseStack.pushPose();
         poseStack.translate(-camX, -camY, -camZ);
-        LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, r, g, b, 1F);
+        LevelRenderer.renderLineBox(poseStack, vertexConsumer, aabb, r, g, b, alpha);
         poseStack.popPose();
     }
 }
