@@ -1,6 +1,7 @@
 package com.qsmium.createreturnticket.networking;
 
 import com.qsmium.createreturnticket.ModMain;
+import com.qsmium.createreturnticket.NotificationManager;
 import com.qsmium.createreturnticket.TicketManager;
 import com.qsmium.createreturnticket.gui.ReturnTicketWindow;
 import com.qsmium.createreturnticket.gui.TransitOverlay;
@@ -46,7 +47,7 @@ public class ReturnTicketPacketHandler
         INSTANCE.messageBuilder(C2SReturnTicketPacket.class, 0, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(C2SReturnTicketPacket::encode)
                 .decoder(C2SReturnTicketPacket::new)
-                .consumerMainThread(ReturnTicketPacketHandler::handleRedeem)
+                .consumerMainThread(ReturnTicketPacketHandler::handleFromClient)
                 .add();
 
         //Register Incoming Packet
@@ -54,6 +55,13 @@ public class ReturnTicketPacketHandler
                 .encoder(S2CReturnTicketPacket::encode)
                 .decoder(S2CReturnTicketPacket::new)
                 .consumerMainThread(ReturnTicketPacketHandler::handleFromServer)
+                .add();
+
+        //Register Outgoing 2 Client Notification Packet
+        INSTANCE.messageBuilder(S2CNotificationPacket.class, 1, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(S2CNotificationPacket::encode)
+                .decoder(S2CNotificationPacket::new)
+                .consumerMainThread(ReturnTicketPacketHandler::handleNotificationFromServer)
                 .add();
 
     }
@@ -71,6 +79,11 @@ public class ReturnTicketPacketHandler
     public static  void preRedeemTicket()
     {
         INSTANCE.sendToServer(new C2SReturnTicketPacket(WorkQuestion.PRE_REDEEM_TICKET));
+    }
+
+    public static void sendNotificationToPlayer(NotificationManager.NotificationTypes notificationType, ServerPlayer player)
+    {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CNotificationPacket(notificationType));
     }
 
     //Function to handle responses from the server
@@ -105,11 +118,16 @@ public class ReturnTicketPacketHandler
                 break;
         }
 
-
+        contextSupplier.get().setPacketHandled(true);
     }
 
+    private static void handleNotificationFromServer(S2CNotificationPacket s2CNotificationPacket, Supplier<NetworkEvent.Context> contextSupplier)
+    {
+        NotificationManager.newNotification(s2CNotificationPacket.notification);
+        contextSupplier.get().setPacketHandled(true);
+    }
 
-    private static void handleRedeem(C2SReturnTicketPacket c2SRedeemReturnTicketPacket, Supplier<NetworkEvent.Context> contextSupplier)
+    private static void handleFromClient(C2SReturnTicketPacket c2SRedeemReturnTicketPacket, Supplier<NetworkEvent.Context> contextSupplier)
     {
 
         //Question to ask if the ticket even exists
@@ -162,6 +180,8 @@ public class ReturnTicketPacketHandler
 
         contextSupplier.get().setPacketHandled(true);
     }
+
+
 
 
 }

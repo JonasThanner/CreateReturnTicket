@@ -1,0 +1,8 @@
+{
+  "notification.createreturnticket.ticket_updated": "Your Ticket was updated",
+  "longNotification.createreturnticket.ticket_updated": "Your Ticket was updated because you entered a new train. Once you leave this train that will be your new exit location.",
+  "notification.createreturnticket.ticket_invalid_range_warning": "You are leaving valid ticket range",
+  "longNotification.createreturnticket.ticket_invalid_range_warning": "You are too far from your exit location for your journey to count as contiguous. Your Ticket wont be able to be used/updated until you get back into range.",
+  "notification.createreturnticket.ticket_too_far": "Too far from exit location!",
+  "longNotification.createreturnticket.ticket_too_far": ""
+}

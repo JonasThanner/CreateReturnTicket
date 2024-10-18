@@ -5,8 +5,11 @@ import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.TicketManager;
 import com.qsmium.createreturnticket.Util;
 import com.qsmium.createreturnticket.gui.NotificationOverlay;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.TickEvent;
@@ -17,10 +20,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.List;
+
 @Mod.EventBusSubscriber(modid = ModMain.MODID, value = Dist.CLIENT)
 public class RenderEventHandler {
 
-    private static final long blockShowTime = 5000; //In Millis
+    private static final long blockShowTime = 10000; //In Millis
     private static final long fadeInTime = 500;
     private static final long fadeOutTime = 1000;
 
@@ -35,10 +40,9 @@ public class RenderEventHandler {
             PoseStack poseStack = event.getPoseStack();
 
             //Calculate the alpha for fade out/in
-            float fadeOutAlpha = timeLeftForBLockShow < fadeOutTime ? Util.easeInOutFloat(1, 0, 1.0f - ((float)timeLeftForBLockShow / (float)fadeOutTime)) : 1;
-            //float fadeOutAlpha = timeLeftForBLockShow < fadeOutTime ? (float)timeLeftForBLockShow / (float)fadeOutTime : 1;
+            float fadeOutAlpha = timeLeftForBLockShow < fadeOutTime ? Util.easeInOutFloat(1, 0, 1.0f - ((float)timeLeftForBLockShow / (float)fadeOutTime)) : 1.1f;
             long fadeInStopTime = blockShowTime - fadeInTime;
-            float fadeInAlpha = fadeInStopTime < timeLeftForBLockShow ? Util.easeInOutFloat(0, 1, 1 -((float)timeLeftForBLockShow - (float)blockShowTime / (float)fadeInTime)) : 1;
+            float fadeInAlpha = fadeInStopTime < timeLeftForBLockShow ? Util.easeInOutFloat(0, 1, 1.0f - (((float)timeLeftForBLockShow - (float)fadeInStopTime) / (float)fadeInTime)) : 1.1f;
             float alpha = fadeInAlpha < 1 ? fadeInAlpha : fadeOutAlpha < 1 ? fadeOutAlpha : 1;
 
             //Render the Highlight
@@ -73,6 +77,9 @@ public class RenderEventHandler {
     {
         highLightPos = blockPos;
         timeLeftForBLockShow = blockShowTime;
+
+        //TODO: Change this shit to delta time or sth
+        timeLast = 0;
 
     }
 }

@@ -2,11 +2,16 @@ package com.qsmium.createreturnticket.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.qsmium.createreturnticket.Keybinds;
 import com.qsmium.createreturnticket.ModMain;
+import com.qsmium.createreturnticket.NotificationManager;
 import com.qsmium.createreturnticket.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
@@ -47,13 +52,8 @@ public class NotificationOverlay
         STAYING_INFO
     }
 
-    public enum Notfications
-    {
-        GENERIC
-    }
-
     public static boolean expandInfoKeyClicked = false;
-    public static List<Notfications> stackedNotifications = new ArrayList<Notfications>();
+    public static List<NotificationManager.CRTNotification> stackedNotifications = new ArrayList<NotificationManager.CRTNotification>();
 
     @SubscribeEvent
     public static void onOverlayRegister(final RegisterGuiOverlaysEvent event)
@@ -70,11 +70,13 @@ public class NotificationOverlay
         private final int notificationHeighY = 31;
         private final int notificationDisplayHeight = 100;
         private final float notificationStayLength = 120;
+        private final int notificationTextWidth = 93;
 
         private final int miniInfoReminderUVx = 470;
         private final int miniInfoReminderUVy = 0;
-        private final int miniInfoWidthX = 23;
-        private final int miniInfoHeightY = 9;
+        private final int miniInfoWidthX = 32;
+        private final int miniInfoHeightY = 12;
+        private final int miniInfoTextWidth = 26; //Max width that the text inside the box is allowed to take up
 
         private final int bigInfoTopUVx = 167;
         private final int bigInfoTopUVy = 151;
@@ -88,6 +90,7 @@ public class NotificationOverlay
         private final int bigInfoBottomUVx = 167;
         private final int bigInfoBottomUVy = 176;
         private final int bigInfoBottomHeightY = 8;
+        private final int bigInfoTextWidth = 110;
 
         public static NotifcationState currentAnimState = NotifcationState.HIDDEN;
         public static float currentAnimTime = 0;
@@ -179,6 +182,9 @@ public class NotificationOverlay
                     {
                         currentAnimTime = 0;
                         currentAnimState = NotifcationState.HIDDEN;
+
+                        //Delete topmost notification
+                        stackedNotifications.remove(0);
                     }
 
                     break;
@@ -433,18 +439,17 @@ public class NotificationOverlay
             //Draw Notification
             guiGraphics.blit(ReturnTicketWidget.TEXTURE, x, y, notificationUVx, notificationUVy, notificationWidthX, notificationHeighY, 512, 256);
 
-            // Get Minecraft's font renderer
+            //Create Text
             Font font = Minecraft.getInstance().font;
+            String text = Component.translatable(stackedNotifications.get(0).notifcationShort).getString();
+            int color = 0x6ac6ae;
 
-            // Text you want to render
-            String text = "Hello, World! 12345";
-
-            // Color (white in this case)
-            int color = 0xFFFFFF;
+            //Turn the text into two lines based on length
+            List<FormattedCharSequence> lines = font.split(FormattedText.of(text), notificationTextWidth);
 
             // Render the text using the GuiGraphics object
-            guiGraphics.drawString(font, text, x + 6, y + 6, color, false);
-            guiGraphics.drawString(font, text, x + 6, y + 18, color, false);
+            guiGraphics.drawString(font, lines.get(0), x + 6, y + 6, color, false);
+            guiGraphics.drawString(font, lines.get(1), x + 6, y + 16, color, false);
 
         }
 
@@ -453,6 +458,25 @@ public class NotificationOverlay
             //Draw the actual notifier
             guiGraphics.blit(ReturnTicketWidget.TEXTURE, x, y, miniInfoReminderUVx, miniInfoReminderUVy, miniInfoWidthX, miniInfoHeightY, 512, 256);
 
+            //Draw Small Key
+            String keyName = "[" + Keybinds.notificationExpand.getKey().getDisplayName().getString() + "]";
+            Font font = Minecraft.getInstance().font;
+            int color = 0x522c58;
+
+            //Get width of text
+            int width = font.width(keyName);
+            int miniXPlus = (miniInfoWidthX - width) / 2;
+
+            //Get the scaling factor to know how much fits into the miniInfo box
+            float scalingFactor = (float)miniInfoTextWidth / (float)width;
+            scalingFactor = scalingFactor > 1 ? 1 : scalingFactor;
+
+            //Do the scaling
+            PoseStack poseStack = guiGraphics.pose();
+            poseStack.pushPose();
+            Util.SafeScaleFromMiddle(poseStack, scalingFactor, scalingFactor,x + miniXPlus, y + 1, width, 6);
+            guiGraphics.drawString(font, keyName, x + miniXPlus, y + 1, color, false);
+            poseStack.popPose();
         }
 
         private void drawNotificationShadow(GuiGraphics guiGraphics, int x, int y)
@@ -469,6 +493,10 @@ public class NotificationOverlay
         // - Render Bottom
         private void drawBigInfo(GuiGraphics guiGraphics, int x, int y)
         {
+            //Calculate neededMiddleSections
+
+
+
             int neededMiddleSections = 1;
 
             //Render Top
@@ -479,6 +507,10 @@ public class NotificationOverlay
 
             //Render Bottom
             guiGraphics.blit(ReturnTicketWidget.TEXTURE, x, y + bigInfoTopHeightY + (bigInfoMiddleHeightY * neededMiddleSections), bigInfoBottomUVx, bigInfoBottomUVy, bigInfoTopWidthX, bigInfoBottomHeightY, 512, 256);
+
+            //Render Text
+
+
         }
 
         //Function that calculates the height that the big notifier has to take up to accomodate all of the different
@@ -486,11 +518,19 @@ public class NotificationOverlay
         //TODO: Actually implement this functionality
         private int bigInfoHeight()
         {
+            //Calculate neededMiddleSections
+            String notificationText = stackedNotifications.get(0).notificationLong;
+
+
+
+
+
+
             return bigInfoTopHeightY + bigInfoMiddleHeightY + bigInfoBottomHeightY;
         }
     }
 
-    public static void addNotification(NotificationOverlay.Notfications newNotification)
+    public static void addNotification(NotificationManager.CRTNotification newNotification)
     {
         stackedNotifications.add(newNotification);
     }

@@ -178,7 +178,8 @@ public class ModMain
                     returnTicket.setExitLocation(player.getPosition(0));
 
                     //Notify Player
-                    player.displayClientMessage(Component.literal("Your Return Ticket was updated"), true);
+                    ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.TICKET_UPDATED, player);
+                    //player.displayClientMessage(Component.literal("Your Return Ticket was updated"), true);
                 }
             }
         }
@@ -195,7 +196,7 @@ public class ModMain
 
             if(event.getItemStack().is(ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft", "stone"))) && event.getEntity() instanceof ServerPlayer)
             {
-                NotificationOverlay.addNotification(NotificationOverlay.Notfications.GENERIC);
+                NotificationManager.newNotification(NotificationManager.NotificationTypes.TICKET_UPDATED);
             }
 
         }

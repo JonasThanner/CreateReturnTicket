@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.awt.*;
 
@@ -21,7 +22,10 @@ public class BlockHighlightRenderer {
 
         BlockAndTintGetter world = mc.level;
         BlockState state = world.getBlockState(pos);
-        AABB aabb = state.getShape(world, pos).bounds().move(pos);
+
+        // Check if the block is air or has no defined shape
+        VoxelShape shape = state.getShape(world, pos);
+        AABB aabb = shape.isEmpty() ? new AABB(pos).inflate(0.01) : shape.bounds().move(pos); // Inflate slightly to avoid a 0-sized box
 
         double camX = mc.gameRenderer.getMainCamera().getPosition().x;
         double camY = mc.gameRenderer.getMainCamera().getPosition().y;
