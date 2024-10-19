@@ -2,6 +2,7 @@ package com.qsmium.createreturnticket;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.datafixers.util.Pair;
 import com.qsmium.createreturnticket.gui.ReturnTicketWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,10 +11,17 @@ import net.minecraft.resources.ResourceLocation;
 import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
 
+import java.util.List;
+
 public class Util
 {
 
     public static int Clamp(int min, int max, int value)
+    {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    public static float Clamp(float min, float max, float value)
     {
         return Math.max(min, Math.min(max, value));
     }
@@ -170,6 +178,85 @@ public class Util
 
         // Interpolate between start and end values
         return start + (end - start) * progress;
+    }
+
+    public static float cubicInterpolation(List<Pair<Double, Double>> points, double progress)
+    {
+        progress = Clamp(0.0f, 1.0f, (float)progress);
+
+        int startIndex = points.size() - 2;
+        for (int i = 1; i < points.size() - 1; i++)
+        {
+            if (points.get(i).getFirst() > progress )
+            {
+                startIndex = i - 1;
+                break;
+            }
+        }
+
+        Pair<Double, Double> p0 = points.get(startIndex);
+        Pair<Double, Double> p1 = points.get(startIndex + 1);
+
+        //Normalize Progress
+        double dist = p1.getFirst() - p0.getFirst();
+        double normalizedProgress = (progress - p0.getFirst()) / dist;
+
+        return easeInOutFloat((float)(double)p0.getSecond(), (float)(double)p1.getSecond(), (float)(double)normalizedProgress);
+
+
+    }
+
+    // Cubic interpolation function
+    public static double CatmullRomInterpolate(List<Pair<Double, Double>> points, double progress) {
+        if (points.size() < 4) {
+            throw new IllegalArgumentException("Need at least 4 points for cubic interpolation.");
+        }
+
+        // Ensure the progress is between 0 and 1
+        progress = Clamp(0.0f, 1.0f, (float)progress);
+
+        // Find the first point with a progress greater than the current progress
+        int startIndex = 0;
+//        for (int i = 1; i < points.size(); i++)
+//        {
+//            if (points.get(i).getFirst() > progress && i < points.size() - 2)
+//            {
+//                startIndex = i - 1;
+//                break;
+//            }
+//
+//            if(i >= points.size() - 2)
+//            {
+//                startIndex = points.size() - 4;
+//                break;
+//            }
+//        }
+
+        // Get the relevant points for cubic interpolation
+        Pair<Double, Double> p0 = points.get(startIndex);
+        Pair<Double, Double> p1 = points.get(startIndex + 1);
+        Pair<Double, Double> p2 = points.get(startIndex + 2);
+        Pair<Double, Double> p3 = points.get(startIndex + 3);
+
+        if (p0 == null || p1 == null || p2 == null || p3 == null) {
+            throw new IllegalArgumentException("Invalid progress range for cubic interpolation.");
+        }
+
+        // Normalize the progress between p1 and p2
+        double t = (progress - p1.getFirst()) / (p2.getFirst() - p1.getFirst());
+
+        // Apply cubic interpolation (Catmull-Rom)
+        return catmullRom(p0.getSecond(), p1.getSecond(), p2.getSecond(), p3.getSecond(), t);
+    }
+
+    // Catmull-Rom cubic interpolation formula
+    private static double catmullRom(double v0, double v1, double v2, double v3, double t) {
+        double t2 = t * t;
+        double t3 = t2 * t;
+
+        return 0.5 * ((2 * v1) + (-v0 + v2) * t +
+                (2 * v0 - 5 * v1 + 4 * v2 - v3) * t2 +
+                (-v0 + 3 * v1 - 3 * v2 + v3) * t3);
     }
 
 

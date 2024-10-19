@@ -3,6 +3,7 @@ package com.qsmium.createreturnticket.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.datafixers.util.Pair;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.Util;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
@@ -17,6 +18,8 @@ import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.opengl.GL11;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Mod.EventBusSubscriber(modid = ModMain.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class TransitOverlay
@@ -245,12 +248,26 @@ public class TransitOverlay
         //Animates the circle that gets bigger and bigger to end the transit animation
         public static boolean animateCloser(GuiGraphics guiGraphics, float partialTick, float animSpeed, int screenWidth, int screenHeight)
         {
-            //Calculate current Scale
-            float scale = (globalAnimTime / (100 / animSpeed)) * 20;
+            //The time in ticks the anim should take up
+            float animTimeToTake = 150 / animSpeed;
 
+            //Calculate the progress of the closer in a 0-1 range
+            float animProgress = globalAnimTime / animTimeToTake;
+
+            //Interpolate scales values
+            Pair<Double, Double> point1 = new Pair<Double, Double>(0.0, 0.0);
+            Pair<Double, Double> point2 = new Pair<Double, Double>(0.2, 1.0);
+            Pair<Double, Double> point3 = new Pair<Double, Double>(0.3, 0.5);
+            Pair<Double, Double> point4 = new Pair<Double, Double>(1.0, 20.0);
+            List<Pair<Double, Double>> pointList = new ArrayList<>();
+            pointList.add(point1);
+            pointList.add(point2);
+            pointList.add(point3);
+            pointList.add(point4);
+            float scale = Util.cubicInterpolation(pointList, animProgress);
+
+            //Pose stack stuff
             PoseStack poseStack = guiGraphics.pose();
-
-
             poseStack.pushPose();
 
             //Scale the closer circle
@@ -261,7 +278,7 @@ public class TransitOverlay
             poseStack.popPose();
 
             //Check if animation is run
-            if(globalAnimTime >= 100)
+            if(globalAnimTime >= animTimeToTake)
             {
                 return true;
             }

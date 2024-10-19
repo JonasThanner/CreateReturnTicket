@@ -199,6 +199,12 @@ public class ModMain
                 NotificationManager.newNotification(NotificationManager.NotificationTypes.TICKET_UPDATED);
             }
 
+            if(event.getItemStack().is(ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft", "stick"))) && event.getEntity() instanceof ServerPlayer)
+            {
+                TransitOverlay.startAnimation = true;
+            }
+
+
         }
 
 

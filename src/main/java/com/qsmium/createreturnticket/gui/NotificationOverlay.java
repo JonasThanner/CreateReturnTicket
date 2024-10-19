@@ -2,6 +2,7 @@ package com.qsmium.createreturnticket.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.datafixers.util.Pair;
 import com.qsmium.createreturnticket.Keybinds;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.NotificationManager;
@@ -85,7 +86,7 @@ public class NotificationOverlay
 
         private final int bigInfoMiddleUVx = 167;
         private final int bigInfoMiddleUVy = 153;
-        private final int bigInfoMiddleHeightY = 23;
+        private final int bigInfoMiddleHeightY = 9;
 
         private final int bigInfoBottomUVx = 167;
         private final int bigInfoBottomUVy = 176;
@@ -494,10 +495,13 @@ public class NotificationOverlay
         private void drawBigInfo(GuiGraphics guiGraphics, int x, int y)
         {
             //Calculate neededMiddleSections
+            String text = Component.translatable(stackedNotifications.get(0).notificationLong).getString();
+            Font font = Minecraft.getInstance().font;
+            int color = 0x522c58;
 
-
-
-            int neededMiddleSections = 1;
+            //Turn the text into two lines based on length
+            List<FormattedCharSequence> lines = font.split(FormattedText.of(text), bigInfoTextWidth);
+            int neededMiddleSections = lines.size();
 
             //Render Top
             guiGraphics.blit(ReturnTicketWidget.TEXTURE, x, y, bigInfoTopUVx, bigInfoTopUVy, bigInfoTopWidthX, bigInfoTopHeightY, 512, 256);
@@ -509,6 +513,10 @@ public class NotificationOverlay
             guiGraphics.blit(ReturnTicketWidget.TEXTURE, x, y + bigInfoTopHeightY + (bigInfoMiddleHeightY * neededMiddleSections), bigInfoBottomUVx, bigInfoBottomUVy, bigInfoTopWidthX, bigInfoBottomHeightY, 512, 256);
 
             //Render Text
+            for(int i = 0; i < neededMiddleSections; i++)
+            {
+                guiGraphics.drawString(font, lines.get(i), x + 3, y + 1 + bigInfoTopHeightY + (bigInfoMiddleHeightY * i), color, false);
+            }
 
 
         }
@@ -519,14 +527,14 @@ public class NotificationOverlay
         private int bigInfoHeight()
         {
             //Calculate neededMiddleSections
-            String notificationText = stackedNotifications.get(0).notificationLong;
+            String text = Component.translatable(stackedNotifications.get(0).notificationLong).getString();
+            Font font = Minecraft.getInstance().font;
 
+            //Turn the text into two lines based on length
+            List<FormattedCharSequence> lines = font.split(FormattedText.of(text), bigInfoTextWidth);
+            int textLines = lines.size();
 
-
-
-
-
-            return bigInfoTopHeightY + bigInfoMiddleHeightY + bigInfoBottomHeightY;
+            return bigInfoTopHeightY + (bigInfoMiddleHeightY * textLines) + bigInfoBottomHeightY;
         }
     }
 
