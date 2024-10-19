@@ -1,8 +1,11 @@
 package com.qsmium.createreturnticket;
 
+import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.Vec3;
 
 public class TicketManager
 {
@@ -38,7 +41,10 @@ public class TicketManager
         //TODO: Hardcoded distance
         if(player.getPosition(0).distanceTo(returnTicket.getExitLocation()) > 10)
         {
-            player.displayClientMessage(Component.literal("Youre too Far from the Exit Location: " + returnTicket.getExitLocation()).withStyle(ChatFormatting.DARK_RED), false);
+            Vec3 blockpos = returnTicket.getExitLocation();
+            ReturnTicketPacketHandler.sendTooFarToPlayer(new BlockPos((int) blockpos.x, (int) blockpos.y, (int) blockpos.z), player);
+
+            //player.displayClientMessage(Component.literal("Youre too Far from the Exit Location: " + returnTicket.getExitLocation()).withStyle(ChatFormatting.DARK_RED), false);
             return false;
         }
 
@@ -69,13 +75,16 @@ public class TicketManager
         //Check Ticket Validity
         if(!returnTicket.isValid())
         {
-            //TODO: Send Invalidity message
+            ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.TICKET_INVALIDATED, player);
             return false;
         }
 
         if(player.getPosition(0).distanceTo(returnTicket.getExitLocation()) > 10)
         {
-            player.displayClientMessage(Component.literal("Youre too Far from the Exit Location: " + returnTicket.getExitLocation()).withStyle(ChatFormatting.DARK_RED), false);
+            Vec3 blockpos = returnTicket.getExitLocation();
+            ReturnTicketPacketHandler.sendTooFarToPlayer(new BlockPos((int) blockpos.x, (int) blockpos.y, (int) blockpos.z), player);
+
+            //player.displayClientMessage(Component.literal("Youre too Far from the Exit Location: " + returnTicket.getExitLocation()).withStyle(ChatFormatting.DARK_RED), false);
             return false;
         }
 

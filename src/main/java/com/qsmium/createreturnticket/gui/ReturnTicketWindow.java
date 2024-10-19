@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ModMain;
+import com.qsmium.createreturnticket.SoundUtils;
 import com.qsmium.createreturnticket.Util;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.client.Minecraft;
@@ -14,6 +15,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
@@ -36,6 +38,13 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     private final int y;
     private final int width;
     private final int height;
+
+    private final int noTicketGraphicUVx = 409;
+    private final int noTicketGraphicUVy = 144;
+    private final int noTicketGraphicWidth = 102;
+    private final int noTicketGraphicHeight = 39;
+    private final int noTicketGraphicOffsetX = 25;
+    private final int noTicketGraphicOffsetY = 20;
 
     private boolean active = false;
     public static boolean activeTicket = false;
@@ -123,7 +132,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         //Draw Graphics if theres no active ticket
         else
         {
-            graphics.blit(TEXTURE, x + 25, y + 20, 409, 144, 102, 39, 512, 256);
+            graphics.blit(TEXTURE, x + noTicketGraphicOffsetX, y + noTicketGraphicOffsetY, noTicketGraphicUVx, noTicketGraphicUVy, noTicketGraphicWidth, noTicketGraphicHeight, 512, 256);
         }
 
 
@@ -202,6 +211,13 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
                 return true;
             }
 
+            //Check if we're clicking on the no ticket area axolotl
+            if(Util.insideBoundsUI((int) mouseX, (int) mouseY, x + noTicketGraphicOffsetX + noTicketGraphicWidth - 65, y + noTicketGraphicOffsetY + noTicketGraphicHeight - 18, x + noTicketGraphicOffsetX+ noTicketGraphicWidth, y + noTicketGraphicOffsetY + noTicketGraphicHeight))
+            {
+                SoundUtils.playGlobalSound(SoundEvents.AXOLOTL_IDLE_AIR, 1.0f, Util.randomRange(0.8f, 1.2f));
+            }
+
+
             return isMouseOver(mouseX, mouseY);
         }
 
@@ -215,7 +231,11 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
 //    }
 
     public void toggleActive() {
-        ticketWidget.toggleActive();
+
+        //Play Click sound
+        SoundUtils.playGlobalSound(SoundEvents.UI_BUTTON_CLICK, 1.0f, 1.0f);
+
+        //ticketWidget.toggleActive();
         active = !active;
         setFocused(active);
 

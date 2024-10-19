@@ -4,6 +4,7 @@ package com.qsmium.createreturnticket.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ModMain;
+import com.qsmium.createreturnticket.SoundUtils;
 import com.qsmium.createreturnticket.TicketManager;
 import com.qsmium.createreturnticket.Util;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
@@ -14,6 +15,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jline.reader.Widget;
@@ -23,6 +25,8 @@ import org.joml.Quaternionf;
 @OnlyIn(Dist.CLIENT)
 public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEventListener
 {
+
+    public static ReturnTicketWidget INSTANCE;
 
     public static final ResourceLocation TEXTURE = new ResourceLocation(ModMain.MODID,"textures/return_ticket.png");
     public static final int RETURN_TICKET_UV_WIDTH = 98;
@@ -53,6 +57,9 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
         this.y = y;
         this.width = width;
         this.height = height;
+        INSTANCE = this;
+
+
 
 
 
@@ -286,9 +293,13 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 
     public void toggleActive() {
         active = !active;
-        setFocused(active);
+        setActive(active);
+    }
 
-        //Reset ripping animation on disable
+    public void setActive(boolean isActive)
+    {
+        setFocused(isActive);
+
         if(!active)
         {
             currentRippingAnimTimer = -1;

@@ -7,25 +7,25 @@ public class C2SReturnTicketPacket
 
 
 
-    public final ReturnTicketPacketHandler.WorkQuestion workQuestion;
+    public final ReturnTicketPacketHandler.ClientToServerWork clientToServerWork;
 
     public C2SReturnTicketPacket(C2SReturnTicketPacket c2SRedeemReturnTicketPacket, FriendlyByteBuf friendlyByteBuf)
     {
-        this(friendlyByteBuf.readEnum(ReturnTicketPacketHandler.WorkQuestion.class));
+        this(friendlyByteBuf.readEnum(ReturnTicketPacketHandler.ClientToServerWork.class));
     }
 
     public C2SReturnTicketPacket(FriendlyByteBuf friendlyByteBuf)
     {
-        this(friendlyByteBuf.readEnum(ReturnTicketPacketHandler.WorkQuestion.class));
+        this(friendlyByteBuf.readEnum(ReturnTicketPacketHandler.ClientToServerWork.class));
     }
 
-    public C2SReturnTicketPacket(ReturnTicketPacketHandler.WorkQuestion workQuestion)
+    public C2SReturnTicketPacket(ReturnTicketPacketHandler.ClientToServerWork clientToServerWork)
     {
-        this.workQuestion = workQuestion;
+        this.clientToServerWork = clientToServerWork;
     }
 
     public void encode(FriendlyByteBuf friendlyByteBuf)
     {
-        friendlyByteBuf.writeEnum(workQuestion);
+        friendlyByteBuf.writeEnum(clientToServerWork);
     }
 }

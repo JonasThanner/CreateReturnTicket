@@ -12,9 +12,11 @@ import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
+import java.util.Random;
 
 public class Util
 {
+    private static final Random RANDOM = new Random();
 
     public static int Clamp(int min, int max, int value)
     {
@@ -257,6 +259,21 @@ public class Util
         return 0.5 * ((2 * v1) + (-v0 + v2) * t +
                 (2 * v0 - 5 * v1 + 4 * v2 - v3) * t2 +
                 (-v0 + 3 * v1 - 3 * v2 + v3) * t3);
+    }
+
+    public static boolean insideBoundsUI(int x, int y, int boundsXTopLeft, int boundsYTopLeft, int boundsXBottomRight, int boundsYBottomRight)
+    {
+        return x >= boundsXTopLeft && x <= boundsXBottomRight && y >= boundsYTopLeft && y <= boundsYBottomRight;
+    }
+
+    public static float randomRange(float min, float max)
+    {
+        if (min > max) {
+            float store = max;
+            max = min;
+            min = store;
+        }
+        return min + RANDOM.nextFloat() * (max - min);
     }
 
 
