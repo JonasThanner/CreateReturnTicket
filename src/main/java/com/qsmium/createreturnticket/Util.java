@@ -276,6 +276,16 @@ public class Util
         return min + RANDOM.nextFloat() * (max - min);
     }
 
+    public static boolean isNight() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level != null) {
+            long timeOfDay = minecraft.level.getDayTime() % 24000; // Minecraft's day is 24000 ticks
+            return timeOfDay >= 13000 && timeOfDay <= 23000; // Night is from tick 13000 to 23000
+        }
+        return false; // Return false if no level is loaded
+    }
+
+
 
 
 }

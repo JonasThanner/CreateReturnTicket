@@ -48,6 +48,11 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     private int currentRipStage = 0;
     private int currentRippingAnimTimer = -1; //If its -1 => Disabled
 
+    //Easteregg Stuff
+    private int timesClickedSqueak = 0;
+    private int eastereggActivateCount = 10;
+    public static boolean eastereggActive = false;
+
 
     public ReturnTicketWidget(int x, int y, int width, int height, Minecraft client)
     {
@@ -274,7 +279,23 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    {
+        //Easteregg Counter
+        if(active && Util.insideBoundsUI((int) mouseX, (int) mouseY, x + 5, y + 43, x + 10, y + 47))
+        {
+            timesClickedSqueak++;
+
+            //Play sound
+            SoundUtils.playGlobalSound(SoundEvents.AXOLOTL_IDLE_AIR, 1.0f, Util.randomRange(0.8f, 1.2f));
+
+            //Check Squeak Counter to activate easteregg
+            if(timesClickedSqueak > eastereggActivateCount)
+            {
+                eastereggActive = true;
+            }
+        }
+
 
         if(isMouseOver(mouseX, mouseY) && active)
         {
@@ -298,6 +319,14 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 
     public void setActive(boolean isActive)
     {
+        active = isActive;
+
+        //Reset Easteregg Activation Counter
+        if(!eastereggActive)
+        {
+            timesClickedSqueak = 0;
+        }
+
         setFocused(isActive);
 
         if(!active)

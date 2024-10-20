@@ -46,6 +46,13 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     private final int noTicketGraphicOffsetX = 25;
     private final int noTicketGraphicOffsetY = 20;
 
+    private final int eastereggUVx = 442;
+    private final int eastereggUVy = 50;
+    private final int eastereggWidth = 70;
+    private final int eastereggHeight = 69;
+    private final int eastereggOffsetX = 108;
+    private final int eastereggOffsetY = -24;
+
     private boolean active = false;
     public static boolean activeTicket = false;
     //private final List<Button> buttons = new ArrayList<>();
@@ -133,6 +140,18 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         else
         {
             graphics.blit(TEXTURE, x + noTicketGraphicOffsetX, y + noTicketGraphicOffsetY, noTicketGraphicUVx, noTicketGraphicUVy, noTicketGraphicWidth, noTicketGraphicHeight, 512, 256);
+        }
+
+        //Draw Easteregg Axolotl
+        if(ReturnTicketWidget.INSTANCE.eastereggActive)
+        {
+            graphics.blit(TEXTURE, x + eastereggOffsetX, y + eastereggOffsetY, eastereggUVx, eastereggUVy, eastereggWidth, eastereggHeight, 512, 256);
+
+            //Draw eyes
+            if(!Util.isNight())
+            {
+                graphics.blit(TEXTURE, x + eastereggOffsetX + 18, y + eastereggOffsetY + 15, 470, 40, 25, 10, 512, 256);
+            }
         }
 
 
