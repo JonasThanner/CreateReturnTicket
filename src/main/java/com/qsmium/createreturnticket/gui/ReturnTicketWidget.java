@@ -64,6 +64,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     private int timesClickedSqueak = 0;
     private int eastereggActivateCount = 10;
     public static boolean eastereggActive = false;
+    private static int ticketWearTickCount = 100;
 
 
     public ReturnTicketWidget(int x, int y, int width, int height, Minecraft client)
@@ -453,6 +454,11 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     public boolean apply()
     {
         return false;
+    }
+
+    public static void tickTicketWear()
+    {
+
     }
 
 

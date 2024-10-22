@@ -21,6 +21,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -74,6 +75,12 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     public void onMouseDraggedEvent(ScreenEvent.MouseDragged event)
     {
         ticketWidget.mouseDragged(event.getDragX(), event.getDragY());
+    }
+
+    @SubscribeEvent
+    public void onWorldTickEvent(TickEvent.World)
+    {
+
     }
 
 
