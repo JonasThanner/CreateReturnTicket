@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.InventoryMenu;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -32,8 +33,6 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
 
     @Inject(method = "init", at = @At("TAIL"), remap = false)
     public void init(CallbackInfo ci) {
-        //int purseX = ExampleClientConfig.CLIENT.pursePositionX.get();
-        //int purseY = ExampleClientConfig.CLIENT.pursePositionY.get();
 
         //The Actual Widget that houses the Return Ticket Image
         returnTicketWidget = new ReturnTicketWindow(this.leftPos + 5, this.topPos + 6, 166, 74, minecraft);
@@ -43,14 +42,8 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
         }, minecraft.player, this);
 
         this.addRenderableWidget(returnTicketButton);
+        //this.addWidget(returnTicketWidget);
     }
-
-    //Incredibly beautiful lambda mixin
-//    @Inject(method = {"lambda$init$0","m_98879_"}, at = @At("TAIL"))
-//    private void updateWidgetPosition(Button button, CallbackInfo ci) {
-//        this.returnTicketButton.setPosition(this.leftPos + 158, this.topPos + 6);
-//        this.numismatic$purse = new PurseWidget(this.leftPos + 129, this.topPos + 20, minecraft, CurrencyHolderAttacher.getExampleHolderUnwrap(minecraft.player));
-//    }
 
     @Inject(method = "render", at = @At("TAIL"), remap = false)
     public void onRender(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
@@ -74,11 +67,13 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
             cir.setReturnValue(true);
         }
     }
-
-//    @Override
-//    protected void renderTooltip(PoseStack matrices, int x, int y) {
-//        if (numismatic$purse.isMouseOver(x, y)) return;
-//        super.renderTooltip(matrices, x, y);
+//
+//    @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true, remap = false)
+//    public void onMouseDragged(double mouseX, double mouseY, int button, double draggedX, double draggedY, CallbackInfoReturnable<Boolean> cir) {
+//        if (returnTicketWidget.mouseDragged(mouseX, mouseY, button, draggedX, draggedY))
+//        {
+//            cir.setReturnValue(true);
+//        }
 //    }
 
 }

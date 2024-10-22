@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.SoundUtils;
-import com.qsmium.createreturnticket.TicketManager;
 import com.qsmium.createreturnticket.Util;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.client.Minecraft;
@@ -16,10 +15,10 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.phys.Vec2;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jline.reader.Widget;
-import org.joml.Quaterniond;
 import org.joml.Quaternionf;
 
 @OnlyIn(Dist.CLIENT)
@@ -47,6 +46,19 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     private int currentRedeemStage = 0;
     private int currentRipStage = 0;
     private int currentRippingAnimTimer = -1; //If its -1 => Disabled
+
+    //Variables for when the ticket is ripped off
+    // => Animations on redeeming
+    private Vec2 mousePrev = new Vec2(0 ,0);
+    private Vec2 mouseCur = new Vec2(0, 0);
+    private Vec2 mouseVec = new Vec2(0, 0);
+    private float rippedRotation = 0;
+    private Vec2 redeemVec = new Vec2(0 , 0); //The that saves the mouse speed for the "floating away" anim
+    private Vec2 redeemAnimVec = new Vec2(0, 0);
+    private Vec2 redeemBaseVec = new Vec2(0, 0);
+    private float currentRedeemAnimTime = -1;
+    private final float redeemAnimTime = 10;
+    private boolean redeemedTicked = false; // redeemedTicket != redeemingTicket
 
     //Easteregg Stuff
     private int timesClickedSqueak = 0;
@@ -139,10 +151,11 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
                 if(redeemingTicket)
                 {
                     //Rip stage should be beginning from main x + main width - 31 and end at main x + main width + 50
-                    int difference = 50 + 31;
-                    int clampedMouseX = Util.Clamp(0, 50 + 31, mouseX - (x + width - 31));
+                    int difference = 31; //"Length" of the rip off width => Ie how far the mouse needs to move
+                    int clampedMouseX = Util.Clamp(0, difference, mouseX - (x + width - 31));
                     float diffRatio = (float)clampedMouseX / (float)difference;
-                    currentRedeemStage = (int) Math.floor(diffRatio * 9);
+                    int newReddemStage = (int) Math.floor(diffRatio * 11);
+                    currentRedeemStage = currentRedeemStage >= 11 ? 11 : newReddemStage;
                 }
             }
 
@@ -205,7 +218,86 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             graphics.blit(TEXTURE, this.x + 51, this.y, 20 + 51, 0, this.width - 31 - 51, this.height, 512, 256);
 
             //Draw the actual part of the ticket that gets ripped off => Redeeming
-            graphics.blit(TEXTURE, this.x + 79, this.y, 31 * currentRedeemStage, this.height, 31, this.height, 512, 256);
+            //If the ripped off part is still attached to the ticket it should stay in one place
+            // => Once its ripped off, it should move with the mouse
+            if(currentRedeemStage < 11)
+            {
+                graphics.blit(TEXTURE, this.x + 79, this.y, 31 * currentRedeemStage, this.height, 31, this.height, 512, 256);
+
+            }
+
+            //When the ticket is ripped off
+            // => Calculate the vector of the mouse speed
+            // => Change rotation based on the difference
+            // => Draw the ticket with rotation
+            else
+            {
+                //Ripped Anim Percentage
+                float reddemAnimPercentage = 0;
+                Vec2 basePosVec;
+
+
+
+                if(!redeemedTicked)
+                {
+                    //Calculate vector of mouse speed
+                    //Vec2 mouseVec = new Vec2(mouseX, mouseY);
+
+                    //Calculate diff and adjust rotation based on that
+                    float mouseXSpeed = (mouseVec.x) * 10;
+                    rippedRotation = Util.Clamp(-30, 30, rippedRotation + ((1 - (Math.abs(rippedRotation) / 30)) * mouseXSpeed));
+
+                    basePosVec = new Vec2(mouseX, mouseY);
+
+                }
+                else
+                {
+                    if(currentRedeemAnimTime < 0)
+                    {
+                        //TODO: DANGER ZONE OMG THIS SUCKS TO BAD
+                        return;
+                    }
+                    currentRedeemAnimTime += delta;
+
+                    //Incase the Animation is done
+                    // => Then we stop the anim, i.e set redeemAnimTimer to -1
+                    if(currentRedeemAnimTime > redeemAnimTime)
+                    {
+                        currentRedeemAnimTime = -1;
+                    }
+
+                    //Calculate the float
+                    reddemAnimPercentage = currentRedeemAnimTime / redeemAnimTime;
+
+                    //Vec calculations
+                    //Dampen moveSpeed
+                    redeemAnimVec = new Vec2(redeemAnimVec.x + redeemVec.x, redeemAnimVec.y + redeemVec.y);
+                    redeemVec = new Vec2(redeemVec.x * (1.0f - (0.1f * delta)), redeemVec.y * (1.0f - (0.1f * delta)));
+
+                    basePosVec = redeemBaseVec;
+
+                }
+
+
+
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f - Util.Clamp(0.0f, 1.0f, reddemAnimPercentage));
+
+                poseStack.pushPose();
+                poseStack.translate(redeemAnimVec.x, redeemAnimVec.y, 0);
+                poseStack.rotateAround(new Quaternionf(0,0,0,0).setAngleAxis(Math.toRadians(rippedRotation), 0, 0, 1), mouseX, mouseY, 0);
+                graphics.blit(TEXTURE, (int) (basePosVec.x - 16), (int) (basePosVec.y - 25), 31 * currentRedeemStage, this.height, 31, this.height, 512, 256);
+                poseStack.popPose();
+
+                RenderSystem.disableBlend();
+
+                //Ripped rotation dampening
+                rippedRotation = rippedRotation * 0.9f;
+
+
+
+            }
 
         }
     }
@@ -229,10 +321,21 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 //        return isMouseOver(mouseX, mouseY);
 //    }
 
+    public void mouseDragged(double dragX, double dragY)
+    {
+        mouseVec = new Vec2((float) dragX, (float) dragY);
+
+    }
+
     //Gets Called when the mouse is dragged
     @Override
-    public boolean mouseDragged(double p_93645_, double p_93646_, int p_93647_, double p_93648_, double p_93649_)
+    public boolean mouseDragged(double mouseX, double mouseY, int p_93647_, double dragX, double dragY)
     {
+        //Saving mouse position
+        mousePrev = mouseCur;
+        mouseCur = new Vec2((float) mouseX, (float) mouseY);
+
+        //mouseVec = new Vec2((float) dragX, (float) dragY);
         //mousePressed = true;
 
         return true;
@@ -245,17 +348,23 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 
             //Handle Ticket redemption
             //This is the actual part where the ticket gets redemeed
-            if(currentRedeemStage >= 8)
+            if(currentRedeemStage >= 11 && !redeemedTicked)
             {
-                //Close inventory screen
-                Minecraft mc = Minecraft.getInstance();
-                if (mc.screen instanceof InventoryScreen) {
-                    mc.setScreen(null);  // Closes the screen
-                }
+//                //Close inventory screen
+//                Minecraft mc = Minecraft.getInstance();
+//                if (mc.screen instanceof InventoryScreen) {
+//                    mc.setScreen(null);  // Closes the screen
+//                }
 
                 //Send Pre-Redeem Request
                 //Everything gets handled by the PacketHandler from here on
                 ReturnTicketPacketHandler.preRedeemTicket();
+
+                //Activate redeeming animation
+                redeemedTicked = true;
+                currentRedeemAnimTime = 0;
+                redeemBaseVec = new Vec2((float) mouseX, (float) mouseY);
+                redeemVec = mouseVec;
             }
 
             //Handle Ticket Ripping
@@ -269,7 +378,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             //Reset all Ripping Variables
             redeemingTicket = false;
             rippingTicket = false;
-            currentRedeemStage = 0;
+
             currentRipStage = 0;
 
             mousePressed = false;
@@ -299,6 +408,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 
         if(isMouseOver(mouseX, mouseY) && active)
         {
+            setFocused(true);
             mousePressed = true;
             return true;
         }
@@ -308,7 +418,8 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 
     //Required to not draw tooltips for items in the crafting interface
     @Override
-    public boolean isMouseOver(double mouseX, double mouseY) {
+    public boolean isMouseOver(double mouseX, double mouseY)
+    {
         return mouseX >= x && mouseX <= x + RETURN_TICKET_UV_WIDTH && mouseY >= y && mouseY <= y + RETURN_TICKET_UV_HEIGHT && active;
     }
 
@@ -319,6 +430,9 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 
     public void setActive(boolean isActive)
     {
+        //Reset some variables
+        currentRedeemStage = 0;
+
         active = isActive;
 
         //Reset Easteregg Activation Counter

@@ -19,6 +19,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -68,6 +70,12 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         RenderSystem.recordRenderCall(() -> Minecraft.getInstance().getMainRenderTarget().enableStencil());
     }
 
+    @SubscribeEvent
+    public void onMouseDraggedEvent(ScreenEvent.MouseDragged event)
+    {
+        ticketWidget.mouseDragged(event.getDragX(), event.getDragY());
+    }
+
 
     public ReturnTicketWindow(int x, int y, int width, int height, Minecraft client)
     {
@@ -99,6 +107,11 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
 //            }
 //        }));
 
+        MinecraftForge.EVENT_BUS.register(this);
+
+
+
+
     }
 
 
@@ -106,13 +119,6 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta)
     {
         if (!active) return;
-
-
-
-
-
-
-
 
         PoseStack poseStack = graphics.pose();
 
@@ -188,9 +194,13 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     @Override
     public boolean mouseDragged(double p_93645_, double p_93646_, int p_93647_, double p_93648_, double p_93649_)
     {
+        if(ticketWidget.isFocused())
+        {
+            return ticketWidget.mouseDragged(p_93645_, p_93646_, p_93647_, p_93648_, p_93649_);
+        }
         //mousePressed = true;
 
-        return true;
+        return false;
     }
 
     @Override
