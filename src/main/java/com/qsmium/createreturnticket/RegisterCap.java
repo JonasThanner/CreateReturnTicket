@@ -12,6 +12,6 @@ public class RegisterCap
     @SubscribeEvent
     public void registerCaps(RegisterCapabilitiesEvent event)
     {
-        //event.register(ReturnTicketData.class);
+        event.register(ReturnTicketData.class);
     }
 }

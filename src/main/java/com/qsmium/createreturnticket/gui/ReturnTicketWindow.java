@@ -77,11 +77,11 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         ticketWidget.mouseDragged(event.getDragX(), event.getDragY());
     }
 
-    @SubscribeEvent
-    public void onWorldTickEvent(TickEvent.World)
-    {
-
-    }
+//    @SubscribeEvent
+//    public void onWorldTickEvent(TickEvent.World)
+//    {
+//
+//    }
 
 
     public ReturnTicketWindow(int x, int y, int width, int height, Minecraft client)

@@ -54,8 +54,9 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
         tag.putDouble("exitY", exitLocation.y);
         tag.putDouble("exitZ", exitLocation.z);
 
-        //Save Ticket Validity
+        //Save actual Ticket Data
         tag.putBoolean("invalidTicket", invalidTicket);
+        tag.putBoolean("ticketRipped", rippedReturnTicket);
         return tag;
     }
 
@@ -68,7 +69,8 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
         //Retreive Exit Location from NBT
         exitLocation = new Vec3(nbt.getDouble("exitX"), nbt.getDouble("exitY"), nbt.getDouble("exitZ"));
 
-        //Get Ticket validity
+        //Get Ticket Data
         invalidTicket = nbt.getBoolean("invalidTicket");
+        rippedReturnTicket = nbt.getBoolean("ticketRipped");
     }
 }
