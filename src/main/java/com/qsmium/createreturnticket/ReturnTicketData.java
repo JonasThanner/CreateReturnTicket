@@ -12,6 +12,7 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     private Vec3 exitLocation = new Vec3(0, 0, 0);
     private boolean rippedReturnTicket = true; //At the beginning no valid return ticket should exist
     private boolean invalidTicket = true; //Tickets are invalidated when a Player leaves the "Allowance" Zone between Train Transfers
+    private int returnTicketAge = 0; //Counter that ticks up for every tick that the return ticket of a player is active. Needed for Ticket aging easteregg
 
     public void setEnterLocation(Vec3 newLocation)
     {
@@ -25,6 +26,9 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     public void un_ripReturnTicket() { rippedReturnTicket = false; }
     public void invalidateTicket() { invalidTicket = true; }
     public void validateTicket() { invalidTicket = false; }
+    public int getTicketAge() { return  returnTicketAge; }
+    public void ageTicket(int addAge) { returnTicketAge += addAge; }
+    public void setTicketAge(int newAge) { returnTicketAge = newAge; }
 
 
     public Vec3 getEnterLocation()
@@ -57,6 +61,7 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
         //Save actual Ticket Data
         tag.putBoolean("invalidTicket", invalidTicket);
         tag.putBoolean("ticketRipped", rippedReturnTicket);
+        tag.putInt("ticketAge", returnTicketAge);
         return tag;
     }
 
@@ -72,5 +77,6 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
         //Get Ticket Data
         invalidTicket = nbt.getBoolean("invalidTicket");
         rippedReturnTicket = nbt.getBoolean("ticketRipped");
+        returnTicketAge = nbt.getInt("ticketAge");
     }
 }

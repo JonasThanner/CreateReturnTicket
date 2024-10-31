@@ -65,6 +65,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     private int eastereggActivateCount = 10;
     public static boolean eastereggActive = false;
     private static int ticketWearTickCount = 100;
+    private static boolean ticketAged = false;
 
 
     public ReturnTicketWidget(int x, int y, int width, int height, Minecraft client)
@@ -212,11 +213,21 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
         //Draw the ticket if its not being ripped apart
         else
         {
-            //Draw the part of the ticket that gets ripped apart => Ripping of
-            graphics.blit(TEXTURE, this.x, this.y, 51 * currentRipStage, 184, 51, this.height, 512, 256);
+            //We only draw the easteregg aged ticket if the ticket isnt being ripped
+            if(ticketAged && currentRipStage == 0)
+            {
+                graphics.blit(TEXTURE, this.x, this.y, 248, 0, 80, this.height, 512, 256);
+            }
+            else
+            {
+                //Draw the part of the ticket that gets ripped apart => Ripping of
+                graphics.blit(TEXTURE, this.x, this.y, 51 * currentRipStage, 184, 51, this.height, 512, 256);
 
-            //Draw the part of the ticket thats static
-            graphics.blit(TEXTURE, this.x + 51, this.y, 20 + 51, 0, this.width - 31 - 51, this.height, 512, 256);
+                //Draw the part of the ticket thats static
+                graphics.blit(TEXTURE, this.x + 51, this.y, 20 + 51, 0, this.width - 31 - 51, this.height, 512, 256);
+
+            }
+
 
             //Draw the actual part of the ticket that gets ripped off => Redeeming
             //If the ripped off part is still attached to the ticket it should stay in one place
@@ -255,7 +266,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
                 {
                     if(currentRedeemAnimTime < 0)
                     {
-                        //TODO: DANGER ZONE OMG THIS SUCKS TO BAD
+                        //TODO: DANGER ZONE OMG THIS SUCKS SO BAD
                         return;
                     }
                     currentRedeemAnimTime += delta;
@@ -374,6 +385,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
                 //RIP TICKET
                 currentRippingAnimTimer = 0;
                 ReturnTicketWindow.activeTicket = false;
+                ticketAged = false;
             }
 
             //Reset all Ripping Variables
@@ -456,9 +468,19 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
         return false;
     }
 
-    public static void tickTicketWear()
+    public static void setTicketAged(boolean isAged)
     {
+        ticketAged = isAged;
+    }
 
+    public static void setTicketAged()
+    {
+        ticketAged = true;
+    }
+
+    public static void deleteTicket()
+    {
+        ticketAged = false;
     }
 
 

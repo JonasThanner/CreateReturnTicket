@@ -11,10 +11,13 @@ import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
 import com.simibubi.create.content.trains.schedule.destination.ScheduleInstruction;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -27,6 +30,9 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.List;
+import java.util.ListIterator;
 
 @Mod(ModMain.MODID)
 public class ModMain
@@ -79,6 +85,20 @@ public class ModMain
             ServerPlayer eventPlayer = (ServerPlayer) event.getEntity();
             eventPlayer.sendSystemMessage(Component.literal("Your Penalty was reduced by 1!")
                     .withStyle(ChatFormatting.GREEN), false);
+
+
+            ReturnTicketData returnTicket = eventPlayer.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
+
+            eventPlayer.sendSystemMessage(Component.literal("Ticket age sent: " + returnTicket.getTicketAge())
+                    .withStyle(ChatFormatting.GREEN), false);
+
+
+            //Send ticket age if its aged
+            if(TicketManager.isTicketAged(eventPlayer))
+            {
+
+                ReturnTicketPacketHandler.sendAgedTicketToPlayer(eventPlayer);
+            }
         }
 
         @SubscribeEvent
@@ -172,6 +192,7 @@ public class ModMain
                 //If a Player exits a train we have to
                 // - Save the Exit location
                 // - Notify Player of new Exit Location
+                // - Reset Ticket Age
                 if (event.isDismounting() && returnTicket.isValid())
                 {
                     //Save new Exit Location
@@ -180,6 +201,10 @@ public class ModMain
                     //Notify Player
                     ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.TICKET_UPDATED, player);
                     //player.displayClientMessage(Component.literal("Your Return Ticket was updated"), true);
+
+                    //Reset Ticket Age internally and on client
+                    returnTicket.setTicketAge(0);
+                    ReturnTicketPacketHandler.sendWorkToPlayer(player, ReturnTicketPacketHandler.ServerToClientWork.TICKET_AGED, false);
                 }
             }
         }
@@ -204,6 +229,33 @@ public class ModMain
                 TransitOverlay.startAnimation = true;
             }
 
+
+        }
+
+        //In the Server Tick Event we need to
+        // => Age Player Tickets
+        @SubscribeEvent
+        public static void onTickEvent(TickEvent.ServerTickEvent event)
+        {
+            //Get all players
+            List<ServerPlayer> players = event.getServer().getPlayerList().getPlayers();
+
+            //Go through players and age ticket data and check if they need to be informed of aged ticket
+            for (ListIterator<ServerPlayer> iter = players.listIterator(); iter.hasNext(); )
+            {
+                //Get player
+                ServerPlayer player = iter.next();
+
+                //Age Ticket
+                TicketManager.ageTicket(player, 1);
+
+
+                if(TicketManager.isTicketAged(player))
+                {
+                    ReturnTicketPacketHandler.sendAgedTicketToPlayer(player);
+                }
+
+            }
 
         }
 

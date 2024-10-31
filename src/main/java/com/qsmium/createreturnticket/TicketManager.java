@@ -103,4 +103,32 @@ public class TicketManager
 
         return !returnTicket.isReturnTicketRipped();
     }
+
+    public static boolean isTicketAged(ServerPlayer player)
+    {
+        //Get ReturnTicket
+        ReturnTicketData returnTicket = player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
+
+        if(returnTicket == null)
+            return false;
+
+        return returnTicket.getTicketAge() > 2000;
+    }
+
+    public static void ageTicket(ServerPlayer player, int amount)
+    {
+        //Get ReturnTicket
+        ReturnTicketData returnTicket = player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
+
+        if(returnTicket == null)
+            return;
+
+        if(returnTicket.isReturnTicketRipped())
+            return;
+
+        returnTicket.ageTicket(amount);
+
+        //Debug
+        player.displayClientMessage(Component.literal(Integer.toString(returnTicket.getTicketAge())), true);
+    }
 }

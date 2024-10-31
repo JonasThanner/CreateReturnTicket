@@ -34,7 +34,8 @@ public class ReturnTicketPacketHandler
     {
         TICKET_EXISTENCE,
         TICKET_REDEEMABLE,
-        TICKET_TOO_FAR
+        TICKET_TOO_FAR,
+        TICKET_AGED,
     }
 
 
@@ -97,6 +98,16 @@ public class ReturnTicketPacketHandler
         INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(ServerToClientWork.TICKET_TOO_FAR, blockPos));
     }
 
+    public static void sendAgedTicketToPlayer(ServerPlayer player)
+    {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(ServerToClientWork.TICKET_AGED, true)); //AnswerResultBoolean is unnecessary here
+    }
+
+    public static void sendWorkToPlayer(ServerPlayer player, ServerToClientWork workType, boolean answer)
+    {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(workType, answer));
+    }
+
     //Function to handle responses from the server
     //Possible responses can be
     // - Return Ticket Existence Answer
@@ -126,6 +137,7 @@ public class ReturnTicketPacketHandler
                 if(s2CReturnTicketPacket.answerTypeBoolean)
                 {
                     TransitOverlay.startAnimation = true;
+                    ReturnTicketWidget.deleteTicket();
                 }
                 break;
 
@@ -135,6 +147,12 @@ public class ReturnTicketPacketHandler
 
                 RenderEventHandler.showBlock(s2CReturnTicketPacket.answerBlockPos);
 
+                break;
+
+            //Fourth case => Server informs us that our ticket is aged
+            // => Inform rendering system
+            case TICKET_AGED:
+                ReturnTicketWidget.setTicketAged(s2CReturnTicketPacket.answerTypeBoolean);
                 break;
         }
 
