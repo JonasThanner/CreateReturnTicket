@@ -285,6 +285,18 @@ public class Util
         return false; // Return false if no level is loaded
     }
 
+    public static Pair<String, String> SeperateString(String text, String seperator)
+    {
+        int index = text.indexOf(seperator);
+
+        if(index == -1)
+        {
+            return new Pair<String, String>(text, "");
+        }
+
+        return new Pair<String, String>(text.substring(0, index), text.substring(index + seperator.length()));
+    }
+
 
 
 

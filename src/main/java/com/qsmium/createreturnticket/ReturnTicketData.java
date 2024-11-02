@@ -39,8 +39,8 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     //nearer to that station, a special character gets put infront of the text
     //If the player enters the train and the train is nearer to the target station, 'before' should be activated
     // => Same logic also applies to the exit station
-    public void setEnterStation(String stationName, boolean before, boolean after) { enterStation = getStationIndicatorChar(before, after) + stationName; }
-    public void setExitStation(String stationName, boolean before, boolean after) { exitStation = getStationIndicatorChar(before, after) + stationName; }
+    public void setEnterStation(String stationName, boolean before, boolean after) { enterStation = getStationIndicatorChar(before, after) + "§" + stationName; }
+    public void setExitStation(String stationName, boolean before, boolean after) { exitStation = getStationIndicatorChar(before, after) + "§" + stationName; }
 
 
 
@@ -107,6 +107,6 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
 
     private String getStationIndicatorChar(boolean before, boolean after)
     {
-        return before ? "< - " : after ? "> - " : "";
+        return before ? "<Leaving from>" : after ? "<Driving to>" : "";
     }
 }

@@ -93,12 +93,18 @@ public class ModMain
             eventPlayer.sendSystemMessage(Component.literal("Ticket age sent: " + returnTicket.getTicketAge())
                     .withStyle(ChatFormatting.GREEN), false);
 
-
+            //Send Ticket Informations that need to be sent
             //Send ticket age if its aged
             if(TicketManager.isTicketAged(eventPlayer))
             {
 
                 ReturnTicketPacketHandler.sendAgedTicketToPlayer(eventPlayer);
+            }
+
+            //Send Ticket Stations
+            if(returnTicket != null)
+            {
+                ReturnTicketPacketHandler.sendTicketStationNames(eventPlayer, returnTicket.getEnterStation(), returnTicket.getExitStation());
             }
         }
 

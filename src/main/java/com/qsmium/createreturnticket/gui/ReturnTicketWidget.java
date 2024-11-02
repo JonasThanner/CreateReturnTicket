@@ -236,13 +236,25 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
                 //Draw the Ticket Naming
                 Font font = Minecraft.getInstance().font;
                 int color = 0x918d8d;
+                int color2 = 0xb987b4;
 
                 //Turn the text into two lines based on length
                 //List<FormattedCharSequence> lines = font.split(FormattedText.of(text), notificationTextWidth);
 
-                // Render the text using the GuiGraphics object
+                //Render the Station Indicators
+                poseStack.pushPose();
+                Util.SafeScaleFromMiddle(poseStack, 0.45f, 0.45f, x + 15, (float)y + 10.5f, font.width(ClientTicketDataHolder.enterStationDirectionIndicator), 6);
+                graphics.drawString(font, ClientTicketDataHolder.enterStationDirectionIndicator, (x + 5), y + 10, color2, false);
+                poseStack.popPose();
+
+                poseStack.pushPose();
+                Util.SafeScaleFromMiddle(poseStack, 0.45f, 0.45f, x + 6, (float)y + 26f, font.width(ClientTicketDataHolder.exitStationDirectionIndicator), 6);
+                graphics.drawString(font, ClientTicketDataHolder.exitStationDirectionIndicator, (x - 10), y + 24, color2, false);
+                poseStack.popPose();
+
+                //Render Text of Actual Station Names
                 graphics.drawString(font, ClientTicketDataHolder.enterStation, x + 4, y + 16, color, false);
-                graphics.drawString(font, ClientTicketDataHolder.exitStation, x + 4, y + 32, color, false);
+                graphics.drawString(font, ClientTicketDataHolder.exitStation, x + 4, y + 31, color, false);
             }
 
 

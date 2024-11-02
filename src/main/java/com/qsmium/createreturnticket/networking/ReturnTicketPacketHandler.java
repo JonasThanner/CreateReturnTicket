@@ -1,9 +1,7 @@
 package com.qsmium.createreturnticket.networking;
 
-import com.qsmium.createreturnticket.ClientTicketDataHolder;
-import com.qsmium.createreturnticket.ModMain;
-import com.qsmium.createreturnticket.NotificationManager;
-import com.qsmium.createreturnticket.TicketManager;
+import com.mojang.datafixers.util.Pair;
+import com.qsmium.createreturnticket.*;
 import com.qsmium.createreturnticket.gui.ReturnTicketWidget;
 import com.qsmium.createreturnticket.gui.ReturnTicketWindow;
 import com.qsmium.createreturnticket.gui.TransitOverlay;
@@ -183,15 +181,20 @@ public class ReturnTicketPacketHandler
 
             //Fifth case => Server informs us of new station names for our ticket
             // => Boolean True -> To Station
+            //Then we need to seperate the indicator (if the train is leaving, going to the station) from the station name. They are seperated by a § symbol
             case TICKET_STATION_NAMES:
 
                 if(s2CReturnTicketPacket.answerTypeBoolean)
                 {
-                    ClientTicketDataHolder.enterStation = s2CReturnTicketPacket.answerString;
+                    Pair<String, String> split = Util.SeperateString(s2CReturnTicketPacket.answerString, "§");
+                    ClientTicketDataHolder.enterStationDirectionIndicator = split.getFirst();
+                    ClientTicketDataHolder.enterStation = split.getSecond();
                 }
                 else
                 {
-                    ClientTicketDataHolder.exitStation = s2CReturnTicketPacket.answerString;
+                    Pair<String, String> split = Util.SeperateString(s2CReturnTicketPacket.answerString, "§");
+                    ClientTicketDataHolder.exitStationDirectionIndicator = split.getFirst();
+                    ClientTicketDataHolder.exitStation = split.getSecond();
                 }
 
                 break;

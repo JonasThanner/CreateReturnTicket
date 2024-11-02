@@ -14,4 +14,6 @@ public class ClientTicketDataHolder
     public static String exitLocation = "";
     public static String enterStation = "-";
     public static String exitStation = "-";
+    public static String enterStationDirectionIndicator = "";
+    public static String exitStationDirectionIndicator = "";
 }
