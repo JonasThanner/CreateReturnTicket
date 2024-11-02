@@ -1,12 +1,12 @@
 package com.qsmium.createreturnticket.networking;
 
+import com.qsmium.createreturnticket.ClientTicketDataHolder;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.NotificationManager;
 import com.qsmium.createreturnticket.TicketManager;
 import com.qsmium.createreturnticket.gui.ReturnTicketWidget;
 import com.qsmium.createreturnticket.gui.ReturnTicketWindow;
 import com.qsmium.createreturnticket.gui.TransitOverlay;
-import com.qsmium.createreturnticket.rendering.HighlightRenderType;
 import com.qsmium.createreturnticket.rendering.RenderEventHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +27,7 @@ public class ReturnTicketPacketHandler
         REDEEM_TICKET,
         REQUEST_TICKET_STATUS,
         PRE_REDEEM_TICKET,
+        RIP_TICKET,
         EMPTY_WORK
     }
 
@@ -36,6 +37,7 @@ public class ReturnTicketPacketHandler
         TICKET_REDEEMABLE,
         TICKET_TOO_FAR,
         TICKET_AGED,
+        TICKET_STATION_NAMES
     }
 
 
@@ -87,6 +89,11 @@ public class ReturnTicketPacketHandler
         INSTANCE.sendToServer(new C2SReturnTicketPacket(ClientToServerWork.PRE_REDEEM_TICKET));
     }
 
+    public static void sendWorkToServer(ClientToServerWork newWork)
+    {
+        INSTANCE.sendToServer(new C2SReturnTicketPacket(newWork));
+    }
+
     public static void sendNotificationToPlayer(NotificationManager.NotificationTypes notificationType, ServerPlayer player)
     {
         INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CNotificationPacket(notificationType));
@@ -107,6 +114,25 @@ public class ReturnTicketPacketHandler
     {
         INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(workType, answer));
     }
+
+    //Sends two packets to the client for the updated ticket station names
+    //Uses the answer boolean to specify if its to or from station
+    // true => to, false => from
+    public static void sendTicketStationNames(ServerPlayer player, String enterStation, String exitStation)
+    {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(ServerToClientWork.TICKET_STATION_NAMES, true, new BlockPos(0, 0, 0), enterStation));
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(ServerToClientWork.TICKET_STATION_NAMES, false, new BlockPos(0, 0, 0), exitStation));
+    }
+    public static void sendTicketEnterStation(ServerPlayer player, String stationName)
+    {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(ServerToClientWork.TICKET_STATION_NAMES, true, new BlockPos(0, 0, 0), stationName));
+    }
+    public static void sendTicketExitStation(ServerPlayer player, String stationName)
+    {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(ServerToClientWork.TICKET_STATION_NAMES, false, new BlockPos(0, 0, 0), stationName));
+    }
+
+
 
     //Function to handle responses from the server
     //Possible responses can be
@@ -153,6 +179,21 @@ public class ReturnTicketPacketHandler
             // => Inform rendering system
             case TICKET_AGED:
                 ReturnTicketWidget.setTicketAged(s2CReturnTicketPacket.answerTypeBoolean);
+                break;
+
+            //Fifth case => Server informs us of new station names for our ticket
+            // => Boolean True -> To Station
+            case TICKET_STATION_NAMES:
+
+                if(s2CReturnTicketPacket.answerTypeBoolean)
+                {
+                    ClientTicketDataHolder.enterStation = s2CReturnTicketPacket.answerString;
+                }
+                else
+                {
+                    ClientTicketDataHolder.exitStation = s2CReturnTicketPacket.answerString;
+                }
+
                 break;
         }
 
@@ -212,6 +253,16 @@ public class ReturnTicketPacketHandler
                 // Work that needs to be thread-safe (most work)
                 ServerPlayer sender = contextSupplier.get().getSender(); // the client that sent this packet
                 TicketManager.tryRedeemTicketServerside(sender);
+                // Do stuff
+            });
+        }
+
+        if(c2SRedeemReturnTicketPacket.clientToServerWork == ClientToServerWork.RIP_TICKET)
+        {
+            contextSupplier.get().enqueueWork(() -> {
+                // Work that needs to be thread-safe (most work)
+                ServerPlayer sender = contextSupplier.get().getSender(); // the client that sent this packet
+                TicketManager.serversideRipTicket(sender);
                 // Do stuff
             });
         }

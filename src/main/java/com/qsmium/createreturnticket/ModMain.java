@@ -10,6 +10,7 @@ import com.simibubi.create.content.trains.schedule.Schedule;
 import com.simibubi.create.content.trains.schedule.ScheduleEntry;
 import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
 import com.simibubi.create.content.trains.schedule.destination.ScheduleInstruction;
+import com.simibubi.create.content.trains.station.GlobalStation;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -132,34 +133,10 @@ public class ModMain
                 // -
                 if (event.isMounting())
                 {
-                    //Debug
-                    //GlobalRailwayManager railwayManager = GlobalRailwayManager.
                     Train currentTrain = Create.RAILWAYS.trains.get(carriage.trainId);
 
-                    Schedule schedule = currentTrain.runtime.getSchedule();
-                    if(schedule != null)
-                    {
-                        ScheduleEntry currentEntry = schedule.entries.get(currentTrain.runtime.currentEntry);
-                        ScheduleInstruction instruction = currentEntry.instruction;
-
-                        if (instruction instanceof DestinationInstruction destination)
-                        {
-                            String regex = destination.getFilterForRegex();
-
-                            //Clip the Regex
-                            String filtered = regex.substring(2, regex.length() - 2);
-
-                            //Debug
-                            //TODO: Remove
-                            player.displayClientMessage(Component.literal(filtered).withStyle(ChatFormatting.DARK_RED), false);
-
-                            //Give the Client the New Destination
-
-                        }
-                    }
-
-
                     //Check if no Ticket exists => I.e is it ripped
+                    // => I.e is this the first enterLocation?
                     if(returnTicket.isReturnTicketRipped())
                     {
                         //Give new ticket and save enter location
@@ -167,6 +144,9 @@ public class ModMain
                         returnTicket.un_ripReturnTicket();
                         returnTicket.setEnterLocation(player.getPosition(0));
                         returnTicket.validateTicket();
+
+                        //Also save the station
+                        TicketManager.getPlayerClosestStation(player, currentTrain, true);
                     }
 
                     //If a ticket does exist
@@ -191,12 +171,16 @@ public class ModMain
 
                 //If a Player exits a train we have to
                 // - Save the Exit location
+                // - Save the Exit Station
                 // - Notify Player of new Exit Location
                 // - Reset Ticket Age
                 if (event.isDismounting() && returnTicket.isValid())
                 {
                     //Save new Exit Location
                     returnTicket.setExitLocation(player.getPosition(0));
+
+                    //Save Exit Station
+                    TicketManager.getPlayerClosestStation(player, Create.RAILWAYS.trains.get(carriage.trainId), false);
 
                     //Notify Player
                     ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.TICKET_UPDATED, player);

@@ -3,23 +3,30 @@ package com.qsmium.createreturnticket.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.qsmium.createreturnticket.ClientTicketDataHolder;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.SoundUtils;
 import com.qsmium.createreturnticket.Util;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.Vec2;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jline.reader.Widget;
 import org.joml.Quaternionf;
+
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEventListener
@@ -226,6 +233,16 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
                 //Draw the part of the ticket thats static
                 graphics.blit(TEXTURE, this.x + 51, this.y, 20 + 51, 0, this.width - 31 - 51, this.height, 512, 256);
 
+                //Draw the Ticket Naming
+                Font font = Minecraft.getInstance().font;
+                int color = 0x918d8d;
+
+                //Turn the text into two lines based on length
+                //List<FormattedCharSequence> lines = font.split(FormattedText.of(text), notificationTextWidth);
+
+                // Render the text using the GuiGraphics object
+                graphics.drawString(font, ClientTicketDataHolder.enterStation, x + 4, y + 16, color, false);
+                graphics.drawString(font, ClientTicketDataHolder.exitStation, x + 4, y + 32, color, false);
             }
 
 
@@ -385,7 +402,11 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
                 //RIP TICKET
                 currentRippingAnimTimer = 0;
                 ReturnTicketWindow.activeTicket = false;
+                ReturnTicketPacketHandler.sendWorkToServer(ReturnTicketPacketHandler.ClientToServerWork.RIP_TICKET);
                 ticketAged = false;
+
+                ClientTicketDataHolder.enterStation = "-";
+                ClientTicketDataHolder.exitStation = "-";
             }
 
             //Reset all Ripping Variables

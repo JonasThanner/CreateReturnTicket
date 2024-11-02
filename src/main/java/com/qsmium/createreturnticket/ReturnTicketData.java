@@ -13,6 +13,8 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     private boolean rippedReturnTicket = true; //At the beginning no valid return ticket should exist
     private boolean invalidTicket = true; //Tickets are invalidated when a Player leaves the "Allowance" Zone between Train Transfers
     private int returnTicketAge = 0; //Counter that ticks up for every tick that the return ticket of a player is active. Needed for Ticket aging easteregg
+    private String enterStation = "-";
+    private String exitStation = "-";
 
     public void setEnterLocation(Vec3 newLocation)
     {
@@ -29,6 +31,17 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     public int getTicketAge() { return  returnTicketAge; }
     public void ageTicket(int addAge) { returnTicketAge += addAge; }
     public void setTicketAge(int newAge) { returnTicketAge = newAge; }
+    public String getEnterStation() { return enterStation; }
+    public String getExitStation() { return exitStation; }
+
+    //Sets the enter Station
+    //If the player enters the train after the enter train after it has left a station but is still
+    //nearer to that station, a special character gets put infront of the text
+    //If the player enters the train and the train is nearer to the target station, 'before' should be activated
+    // => Same logic also applies to the exit station
+    public void setEnterStation(String stationName, boolean before, boolean after) { enterStation = getStationIndicatorChar(before, after) + stationName; }
+    public void setExitStation(String stationName, boolean before, boolean after) { exitStation = getStationIndicatorChar(before, after) + stationName; }
+
 
 
     public Vec3 getEnterLocation()
@@ -39,8 +52,16 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     {
         return exitLocation;
     }
+
+
     public boolean isReturnTicketRipped() {return rippedReturnTicket; }
     public boolean isValid() { return !invalidTicket; }
+
+    public void resetStations()
+    {
+        enterStation = "-";
+        exitStation = "-";
+    }
 
 
     @Override
@@ -62,6 +83,8 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
         tag.putBoolean("invalidTicket", invalidTicket);
         tag.putBoolean("ticketRipped", rippedReturnTicket);
         tag.putInt("ticketAge", returnTicketAge);
+        tag.putString("enterStation", enterStation);
+        tag.putString("exitStation", exitStation);
         return tag;
     }
 
@@ -78,5 +101,12 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
         invalidTicket = nbt.getBoolean("invalidTicket");
         rippedReturnTicket = nbt.getBoolean("ticketRipped");
         returnTicketAge = nbt.getInt("ticketAge");
+        enterStation = nbt.getString("enterStation");
+        exitStation = nbt.getString("exitStation");
+    }
+
+    private String getStationIndicatorChar(boolean before, boolean after)
+    {
+        return before ? "< - " : after ? "> - " : "";
     }
 }

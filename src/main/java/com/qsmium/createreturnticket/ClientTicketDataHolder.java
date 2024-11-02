@@ -12,4 +12,6 @@ public class ClientTicketDataHolder
     public static Vec3 exitPos = new Vec3(300000000, 0, 0);
     public static String enterLocation = "";
     public static String exitLocation = "";
+    public static String enterStation = "-";
+    public static String exitStation = "-";
 }
