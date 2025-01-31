@@ -34,6 +34,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
 {
     public static ReturnTicketWindow instance;
     public static final ResourceLocation TEXTURE = new ResourceLocation(ModMain.MODID,"textures/return_ticket.png");
+    public static final ResourceLocation TEXTURE2 = new ResourceLocation(ModMain.MODID, "textures/return_ticket_two.png");
 
     public static final ResourceLocation TEST_MASK = new ResourceLocation(ModMain.MODID,"textures/test_mask.png");
     private final Minecraft client;

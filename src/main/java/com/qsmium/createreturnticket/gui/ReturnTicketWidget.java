@@ -25,6 +25,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jline.reader.Widget;
 import org.joml.Quaternionf;
+import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 
@@ -37,6 +38,10 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     public static final ResourceLocation TEXTURE = new ResourceLocation(ModMain.MODID,"textures/return_ticket.png");
     public static final int RETURN_TICKET_UV_WIDTH = 98;
     public static final int RETURN_TICKET_UV_HEIGHT = 50;
+    public static final int RETURN_TICKT_UV_X = 20;
+    public static final int RETURN_TICKET_UV_Y= 0;
+    public static final int RIP_BACKGROUND_UV_WIDTH = 51;
+    public static final int RIP_BACKGROUND_UV_HEIGHT = 50;
     private final Minecraft client;
     private final int x;
     private final int y;
@@ -150,8 +155,9 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
                 if(rippingTicket)
                 {
                     //Rip stage should be beginning from main x + main width - 31 and end at main x + main width + 50
-                    int difference = height * 2;
-                    int clampedMouseY = Util.Clamp(0, height * 2, mouseY);
+                    int difference = height;
+                    int mouseStartingAtTicket = mouseY - this.y;
+                    int clampedMouseY = Util.Clamp(0, difference, mouseStartingAtTicket);
                     float diffRatio = (float)clampedMouseY / (float)difference;
                     currentRipStage = (int) Math.floor(diffRatio * 6);
                 }
@@ -227,11 +233,29 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             }
             else
             {
-                //Draw the part of the ticket that gets ripped apart => Ripping of
-                graphics.blit(TEXTURE, this.x, this.y, 51 * currentRipStage, 184, 51, this.height, 512, 256);
+                poseStack.pushPose();
 
-                //Draw the part of the ticket thats static
-                graphics.blit(TEXTURE, this.x + 51, this.y, 20 + 51, 0, this.width - 31 - 51, this.height, 512, 256);
+                //=================== Ticket Ripping Animation Explanation ==================
+                //For ripping the ticket we
+                // - Draw a mask to hide the ticket where its "ripped" i.e has air
+                // - Draw the main part of the ticket
+                // - Draw the "backside" of the ticket
+                // => Stencil Mask has to be done before whats being masked out
+                //=================== Ticket Ripping Animation Explanation ==================
+                Util.setupStencilMask();
+                RenderSystem.setShaderTexture(0, ReturnTicketWindow.TEXTURE2);
+                graphics.blit(ReturnTicketWindow.TEXTURE2, this.x, this.y, RIP_BACKGROUND_UV_WIDTH * (currentRipStage - 1), 72, RIP_BACKGROUND_UV_WIDTH, 46, 512, 256);
+
+                //So its the correct Stencil Mode
+                Util.setupStencilTexture(GL11.GL_NOTEQUAL);
+
+                Util.setupStencilTexture();
+                RenderSystem.setShaderTexture(0, TEXTURE);
+                RenderSystem.setShaderTexture(0, ReturnTicketWindow.TEXTURE2);
+
+
+                //Draw the main Ticket
+                graphics.blit(TEXTURE, this.x, this.y, RETURN_TICKT_UV_X, RETURN_TICKET_UV_Y, RETURN_TICKET_UV_WIDTH - 19, RETURN_TICKET_UV_HEIGHT, 512, 256);
 
                 //Draw the Ticket Naming
                 Font font = Minecraft.getInstance().font;
@@ -255,6 +279,16 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
                 //Render Text of Actual Station Names
                 graphics.drawString(font, ClientTicketDataHolder.enterStation, x + 4, y + 16, color, false);
                 graphics.drawString(font, ClientTicketDataHolder.exitStation, x + 4, y + 31, color, false);
+
+                //Draw the ripping ticket backside
+                graphics.blit(ReturnTicketWindow.TEXTURE2, this.x, this.y, RIP_BACKGROUND_UV_WIDTH * (currentRipStage - 1), 0, RIP_BACKGROUND_UV_WIDTH, RIP_BACKGROUND_UV_HEIGHT, 512, 256);
+
+
+
+                Util.disableStencil();
+                poseStack.popPose();
+
+
             }
 
 
