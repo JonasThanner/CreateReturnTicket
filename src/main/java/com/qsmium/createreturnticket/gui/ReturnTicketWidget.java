@@ -459,6 +459,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             redeemingTicket = false;
             rippingTicket = false;
 
+            currentRedeemStage = redeemedTicked ? currentRedeemStage : 0;
             currentRipStage = 0;
 
             mousePressed = false;

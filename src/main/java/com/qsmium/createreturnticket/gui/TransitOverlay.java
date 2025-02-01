@@ -154,7 +154,7 @@ public class TransitOverlay
 
 
                     //Draw Animating Arrows
-                    animateArrowToDirection(guiGraphics, partialTick, screenWidth);
+                    animateArrowToDirection(guiGraphics, partialTick, screenWidth, screenHeight);
 
 
                     break;
@@ -177,7 +177,7 @@ public class TransitOverlay
                     animateAxolotl(guiGraphics, partialTick, 8f, screenWidth , screenHeight);
 
                     //Draw Animating Arrows
-                    animateArrowToDirection(guiGraphics, partialTick, screenWidth);
+                    animateArrowToDirection(guiGraphics, partialTick, screenWidth, screenHeight);
 
 
 
@@ -209,7 +209,7 @@ public class TransitOverlay
 
                     //Draw Animating Arrows
                     RenderSystem.setShaderTexture(0, ReturnTicketWidget.TEXTURE);
-                    animateArrowToDirection(guiGraphics, partialTick, screenWidth);
+                    animateArrowToDirection(guiGraphics, partialTick, screenWidth, screenHeight);
 
                     Util.disableStencil();
 
@@ -367,17 +367,22 @@ public class TransitOverlay
             //TODO
 
 
+            //Draw Top Arrow Tip
+            guiGraphics.blit(ReturnTicketWindow.TEXTURE, 0 + (int)(currentAnimTime * animSpeed), arrowY, 228, 133, 12, ARROW_UV_HEIGHT, 512, 256);
 
-
-            //Draw Arrow Tip
-            guiGraphics.blit(ReturnTicketWindow.TEXTURE, 0 + (int)(currentAnimTime * animSpeed), arrowY, 228, 133, 12, 18, 512, 256);
+            //Draw Bottom Arrow Tip
+            int bottomArrowY = screenHeight - arrowY - ARROW_UV_HEIGHT;
+            guiGraphics.blit(ReturnTicketWindow.TEXTURE, screenWidth - (int)(currentAnimTime * animSpeed), bottomArrowY, 284, 150, 12, ARROW_UV_HEIGHT, 512, 256);
 
             //Calculate how many arrow tex needed for anim
             int arrowCount = (screenWidth / ARROW_UV_WIDTH) + 1;
 
             //Draw Arrow Train
             //Has to be trailing behind Arrow Top
-            Util.drawRepatingBlit(guiGraphics, ReturnTicketWindow.TEXTURE, 0 + (int)(currentAnimTime * animSpeed) - (arrowCount * 50), arrowY, 178, 133, 50, 18, 512, 256, arrowCount, 1);
+            Util.drawRepatingBlit(guiGraphics, ReturnTicketWindow.TEXTURE, 0 + (int)(currentAnimTime * animSpeed) - (arrowCount * 50), arrowY, 178, 133, ARROW_UV_WIDTH, ARROW_UV_HEIGHT, 512, 256, arrowCount, 1);
+
+            //Draw bottom ArrowTrain
+            Util.drawRepatingBlit(guiGraphics, ReturnTicketWindow.TEXTURE, screenWidth - (int)(currentAnimTime * animSpeed) + 12, bottomArrowY, 296, 150, ARROW_UV_WIDTH, ARROW_UV_HEIGHT, 512, 256, arrowCount, 1);
 
             //Calculate Max Animation
             // => Max Animation is when the Arrowtrain is covering the whole screen
@@ -392,7 +397,7 @@ public class TransitOverlay
 
         }
 
-        public static void animateArrowToDirection(GuiGraphics guiGraphics, float partialTick, int screenWidth)
+        public static void animateArrowToDirection(GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight)
         {
             //Curret anim cycle logic
             currentAnimTime += partialTick;
@@ -407,7 +412,10 @@ public class TransitOverlay
             }
 
             //Draw anim Cycle
-            Util.drawRepatingBlit(guiGraphics, ReturnTicketWindow.TEXTURE, 0 + arrowAnimCycle - ARROW_UV_WIDTH, arrowY, 178, 133, 50, 18, 512, 256, (screenWidth / ARROW_UV_WIDTH) + 2, 1);
+            Util.drawRepatingBlit(guiGraphics, ReturnTicketWindow.TEXTURE, 0 + arrowAnimCycle - ARROW_UV_WIDTH, arrowY, 178, 133, ARROW_UV_WIDTH, ARROW_UV_HEIGHT, 512, 256, (screenWidth / ARROW_UV_WIDTH) + 2, 1);
+
+            //Draw bottom ArrowTrain
+            Util.drawRepatingBlit(guiGraphics, ReturnTicketWindow.TEXTURE, (-arrowAnimCycle) - ARROW_UV_WIDTH, screenHeight - arrowY - ARROW_UV_HEIGHT, 296, 150, ARROW_UV_WIDTH, ARROW_UV_HEIGHT, 512, 256, (screenWidth / ARROW_UV_WIDTH) + 2, 1);
 
 
         }
