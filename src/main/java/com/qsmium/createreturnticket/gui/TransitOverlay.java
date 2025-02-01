@@ -51,6 +51,10 @@ public class TransitOverlay
         private static final int AXOLOTL_UV_WIDTH = 162;
         private  static final int AXOLOTL_UV_HEIGHT = 72;
         private static final int CLOSER_UV_SIZE = 50;
+        private static final int AXOTRACKS_UV_WIDTH = 126;
+        private static final int AXOTRACKS_UV_HEIGHT = 92;
+        private static final int AXOTRACKS_UV_X = 0;
+        private static final int AXOTRACKS_UV_Y = 119;
 
 
         private static int animationState = 1;
@@ -318,16 +322,24 @@ public class TransitOverlay
             //Calculate Axolotl Draw Position
             // => Should be so that Axoltl is at center of screen
             int axoX = (screenWidth / 2) - (AXOLOTL_UV_WIDTH / 2);
-            int axoY = (screenHeight / 2) - (AXOLOTL_UV_HEIGHT / 2);
+            int axoY = (screenHeight / 2) - (AXOLOTL_UV_HEIGHT / 2) - 25;
 
             //Calculate AxolotlUV Coordinates
             int axoUVX = AXOLOTL_UV_WIDTH * ((axolotlAnimCycle) % 3);
             int axoUVY = AXOLOTL_UV_HEIGHT * (int) (Math.floor((double) axolotlAnimCycle) / 3.0);
 
+            //Scale down AxoTracks logo
+            guiGraphics.pose().pushPose();
+
             //Drawing Axolotl
             guiGraphics.blit(AXOLOTL_TEX, axoX, axoY, axoUVX, axoUVY, AXOLOTL_UV_WIDTH, AXOLOTL_UV_HEIGHT, 512, 256);
 
+            //Draw AxoTracks Logo
+            guiGraphics.blit(ReturnTicketWindow.TEXTURE2, axoX + +22, axoY + AXOLOTL_UV_HEIGHT, AXOTRACKS_UV_X, AXOTRACKS_UV_Y, AXOTRACKS_UV_WIDTH, AXOTRACKS_UV_HEIGHT, 512, 256);
 
+            Util.SafeScaleFromMiddle(guiGraphics.pose(), 0.5f, 0.5f, axoX, axoY, 512, 256);
+
+            guiGraphics.pose().popPose();
         }
 
         public static boolean animateBackground(GuiGraphics guiGraphics, float partialTick, float animSpeed, int screenWidth, int screenHeight)
