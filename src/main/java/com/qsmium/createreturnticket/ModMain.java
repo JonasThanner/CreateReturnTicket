@@ -184,7 +184,7 @@ public class ModMain
                         //If invalid
                         else
                         {
-                            player.displayClientMessage(Component.literal("Your Return Ticket is invalid. This Journey will not Count. Consider ripping your Ticket"), true);
+                            ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.TICKET_INVALIDATED, player);
                             returnTicket.invalidateTicket();
                         }
                     }
