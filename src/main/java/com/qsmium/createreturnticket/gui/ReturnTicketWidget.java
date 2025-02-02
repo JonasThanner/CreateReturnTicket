@@ -562,6 +562,9 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             int tooltipX = (int) mouseX + 2;
             int tooltipY = (int) mouseY - BOX_UV_HEIGHT - 2;
 
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+
             // --- Draw the left side of the box ---
             // This part is drawn at the tooltip’s origin.
             graphics.blit(TEXTURE, tooltipX, tooltipY, LEFT_BOX_UV_X, BOX_UV_Y, BOX_UV_SIDES_WIDTH, BOX_UV_HEIGHT, 512, 256);
@@ -592,6 +595,8 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             int textY = tooltipY + ((BOX_UV_HEIGHT - font.lineHeight) / 2) + 1;
             int color = 0xb987b4;
             graphics.drawString(font, coordinateString, textX, textY, color, false);
+
+            RenderSystem.disableBlend();
         }
     }
 
