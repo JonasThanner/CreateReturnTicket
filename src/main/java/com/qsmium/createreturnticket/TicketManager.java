@@ -276,11 +276,19 @@ public class TicketManager
         {
             returnTicket.setEnterStation(stationName, stationary ? false : toStationWinner, stationary ? false : !toStationWinner);
             ReturnTicketPacketHandler.sendTicketEnterStation(player, returnTicket.getEnterStation());
+
+            //Save the exact enter location and update the player of it
+            returnTicket.setEnterLocation(player.blockPosition().getCenter());
+            ReturnTicketPacketHandler.sendTicketEnterPosition(player, returnTicket.getEnterLocation());
         }
         else
         {
             returnTicket.setExitStation(stationName, stationary ? false : toStationWinner, stationary ? false : !toStationWinner);
             ReturnTicketPacketHandler.sendTicketExitStation(player, returnTicket.getExitStation());
+
+            //Save the exact exit location and update the player of it
+            returnTicket.setExitLocation(player.blockPosition().getCenter());
+            ReturnTicketPacketHandler.sendTicketExitPosition(player, returnTicket.getExitLocation());
         }
 
     }

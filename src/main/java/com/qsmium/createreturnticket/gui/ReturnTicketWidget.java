@@ -15,6 +15,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
@@ -42,6 +43,12 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     public static final int RETURN_TICKET_UV_Y= 0;
     public static final int RIP_BACKGROUND_UV_WIDTH = 51;
     public static final int RIP_BACKGROUND_UV_HEIGHT = 50;
+    public static final int BOX_UV_Y = 133;
+    public static final int BOX_UV_HEIGHT = 17;
+    public static final int BOX_UV_SIDES_WIDTH = 6;
+    public static final int LEFT_BOX_UV_X = 257;
+    public static final int RIGHT_BOX_UV_X = 295;
+    public static final int MIDDLE_BOX_UV_X = 262;
     private final Minecraft client;
     private final int x;
     private final int y;
@@ -288,7 +295,6 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
                 Util.disableStencil();
                 poseStack.popPose();
 
-
             }
 
 
@@ -375,6 +381,13 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             }
 
         }
+
+        //Draw Coordinates of Stations
+        //Needs to be done after everything because we want it to draw ontop
+        if(currentRipStage == 0 && currentRedeemStage == 0)
+        {
+            drawStationCoordinatesTooltip(graphics, mouseX, mouseY);
+        }
     }
 
     @Override
@@ -382,19 +395,6 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     {
 
     }
-
-
-
-//    @Override
-//    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-//        if (!this.active || client.player.isSpectator()) return false;
-//
-//        for (Button buttonWidget : buttons) {
-//            if (buttonWidget.mouseClicked(mouseX, mouseY, button)) return true;
-//        }
-//
-//        return isMouseOver(mouseX, mouseY);
-//    }
 
     public void mouseDragged(double dragX, double dragY)
     {
@@ -497,11 +497,155 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
         return false;
     }
 
-    //Required to not draw tooltips for items in the crafting interface
+
     @Override
     public boolean isMouseOver(double mouseX, double mouseY)
     {
-        return mouseX >= x && mouseX <= x + RETURN_TICKET_UV_WIDTH && mouseY >= y && mouseY <= y + RETURN_TICKET_UV_HEIGHT && active;
+        //Required to not draw tooltips for items in the crafting interface
+        if(mouseX >= x && mouseX <= x + RETURN_TICKET_UV_WIDTH && mouseY >= y && mouseY <= y + RETURN_TICKET_UV_HEIGHT && active)
+        {
+
+
+
+            return true;
+        }
+        return false;
+    }
+
+    //To draw station tooltips, we first check if the mouse is over either the enter or exit location
+    //If it is => Then we draw the actual coordinates
+    // - To draw the coordinates, we first grab the coordinates, and then convert them to a minecraft string
+    // - Then we calculate how long that text string is
+    // - Based on this, we then first draw the left side of the box i.e like this [ => Box should stay attached to mouse
+    // - then we draw the main part of the box and stretch it to the needed size
+    private void drawStationCoordinatesTooltip(GuiGraphics graphics, double mouseX, double mouseY)
+    {
+        // Only show the tooltip when the mouse is over one of the station names.
+        if (isMouseOverStationNames(mouseX, mouseY))
+        {
+
+            // Grab the station coordinates.
+            //TODO: Grab real coordinates
+            int coordX;
+            int coordY;
+            if(isOverEntranceStation(mouseX, mouseY))
+            {
+                if(!ClientTicketDataHolder.enterLocExists)
+                {
+                    return;
+                }
+                BlockPos pos = ClientTicketDataHolder.enterLocation;
+                coordX = pos.getX();
+                coordY = pos.getY();
+            }
+            else
+            {
+                if(!ClientTicketDataHolder.exitLocExists)
+                {
+                    return;
+                }
+                BlockPos pos = ClientTicketDataHolder.exitLocation;
+                coordX = pos.getX();
+                coordY = pos.getY();
+            }
+
+            // Convert the coordinates into a nicely formatted string.
+            // For example: "X: 100 Y: 200"
+            String coordinateString = "X: " + coordX + " Y: " + coordY;
+
+            // Calculate the width (in pixels) of the coordinate string so that the box can scale.
+            Font font = Minecraft.getInstance().font;
+            int textWidth = font.width(coordinateString);
+
+            // Determine where the tooltip box will be drawn; here we attach it to the current mouse position.
+            //Additionally we need to add an offset here because its supposed to draw not directly at the mouse
+            int tooltipX = (int) mouseX + 2;
+            int tooltipY = (int) mouseY - BOX_UV_HEIGHT - 2;
+
+            // --- Draw the left side of the box ---
+            // This part is drawn at the tooltip’s origin.
+            graphics.blit(TEXTURE, tooltipX, tooltipY, LEFT_BOX_UV_X, BOX_UV_Y, BOX_UV_SIDES_WIDTH, BOX_UV_HEIGHT, 512, 256);
+
+            //Scale the middle Part to the required text size
+            PoseStack poseStack = graphics.pose();
+            poseStack.pushPose();
+            int middleX = tooltipX + BOX_UV_SIDES_WIDTH;
+            Util.SafeScale2(poseStack, textWidth, 1, middleX, tooltipY, 10, BOX_UV_HEIGHT);
+
+            // --- Draw the middle (stretchable) part of the box ---
+            // The middle part is drawn immediately to the right of the left side.
+
+            graphics.blit(TEXTURE, middleX, tooltipY, MIDDLE_BOX_UV_X, BOX_UV_Y, 1, BOX_UV_HEIGHT, 512, 256);
+
+
+            poseStack.popPose();
+
+            // --- Draw the right side of the box ---
+            // The right side is drawn immediately after the middle part.
+            int rightX = middleX + textWidth;
+            graphics.blit(TEXTURE, rightX, tooltipY, RIGHT_BOX_UV_X, BOX_UV_Y, BOX_UV_SIDES_WIDTH, BOX_UV_HEIGHT, 512, 256);
+
+            // --- Draw the coordinate string on top of the box ---
+            // Here, the text is drawn within the middle section.
+            // Adjust the vertical offset so that the text is centered.
+            int textX = tooltipX + BOX_UV_SIDES_WIDTH;
+            int textY = tooltipY + ((BOX_UV_HEIGHT - font.lineHeight) / 2) + 1;
+            int color = 0xb987b4;
+            graphics.drawString(font, coordinateString, textX, textY, color, false);
+        }
+    }
+
+    /**
+     * Checks if the mouse is over the entrance station text.
+     * Entrance station is drawn at (x + 4, y + 16) with a hard-coded bounding box size.
+     */
+    private boolean isOverEntranceStation(double mouseX, double mouseY) {
+        // Starting position of the entrance station text.
+        int stationX = x + 4;
+        int stationY = y + 16;
+
+        // Hard-coded bounds (magic numbers) for the bounding box.
+        int boxWidth = 70;
+        int boxHeight = 10;
+
+        return Util.insideBoundsUI(
+                (int) mouseX,
+                (int) mouseY,
+                stationX,
+                stationY,
+                stationX + boxWidth,
+                stationY + boxHeight
+        );
+    }
+
+    /**
+     * Checks if the mouse is over the exit station text.
+     * Exit station is drawn at (x + 4, y + 31) with a hard-coded bounding box size.
+     */
+    private boolean isOverExitStation(double mouseX, double mouseY) {
+        // Starting position of the exit station text.
+        int stationX = x + 4;
+        int stationY = y + 31;
+
+        // Hard-coded bounds (magic numbers) for the bounding box.
+        int boxWidth = 80;
+        int boxHeight = 10;
+
+        return Util.insideBoundsUI(
+                (int) mouseX,
+                (int) mouseY,
+                stationX,
+                stationY,
+                stationX + boxWidth,
+                stationY + boxHeight
+        );
+    }
+
+    /**
+     * Checks if the mouse is over either the entrance or exit station texts.
+     */
+    private boolean isMouseOverStationNames(double mouseX, double mouseY) {
+        return isOverEntranceStation(mouseX, mouseY) || isOverExitStation(mouseX, mouseY);
     }
 
     public void toggleActive() {

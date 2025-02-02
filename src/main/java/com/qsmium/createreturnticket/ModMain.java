@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -105,6 +106,20 @@ public class ModMain
             if(returnTicket != null)
             {
                 ReturnTicketPacketHandler.sendTicketStationNames(eventPlayer, returnTicket.getEnterStation(), returnTicket.getExitStation());
+
+                //Send Enter/Exit Locations
+                //TODO: BOBOBOBO BAD BAD BAD
+                //TODO: Saying exit pos doesnt exist if == 0 is bad but it works for now ig
+                Vec3 pos = returnTicket.getEnterLocation();
+                if(!pos.equals(new Vec3(0,0,0)))
+                {
+                    ReturnTicketPacketHandler.sendTicketEnterPosition(eventPlayer, pos);
+                }
+                pos = returnTicket.getExitLocation();
+                if(!pos.equals(new Vec3(0,0,0)))
+                {
+                    ReturnTicketPacketHandler.sendTicketExitPosition(eventPlayer, pos);
+                }
             }
         }
 

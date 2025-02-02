@@ -32,6 +32,8 @@ public class Util
     {
         SafeScale(poseStack, scaleX, scaleY, originX, originY, 0, 0);
     }
+
+    //TODO: !!!! DOESNT WORK WITH X SCALING
     public static void SafeScale(PoseStack poseStack, float scaleX, float scaleY, float originX, float originY, float texSizeX, float texSizeY)
     {
         //Adjust for negative scales => fake negative scaling and then offsetting

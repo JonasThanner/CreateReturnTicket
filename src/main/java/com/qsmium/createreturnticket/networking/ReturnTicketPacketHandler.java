@@ -9,6 +9,7 @@ import com.qsmium.createreturnticket.rendering.RenderEventHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
@@ -35,7 +36,9 @@ public class ReturnTicketPacketHandler
         TICKET_REDEEMABLE,
         TICKET_TOO_FAR,
         TICKET_AGED,
-        TICKET_STATION_NAMES
+        TICKET_STATION_NAMES,
+        TICKET_ENTER_POS,
+        TICKET_EXIT_POS
     }
 
 
@@ -130,6 +133,18 @@ public class ReturnTicketPacketHandler
         INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(ServerToClientWork.TICKET_STATION_NAMES, false, new BlockPos(0, 0, 0), stationName));
     }
 
+    public static void sendTicketEnterPosition(ServerPlayer player, Vec3 pos)
+    {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(ServerToClientWork.TICKET_ENTER_POS, new BlockPos((int) pos.x, (int) pos.y, (int) pos.z)));
+    }
+
+    public static void sendTicketExitPosition(ServerPlayer player, Vec3 pos)
+    {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(ServerToClientWork.TICKET_EXIT_POS, new BlockPos((int) pos.x, (int) pos.y, (int) pos.z)));
+    }
+
+
+
 
 
     //Function to handle responses from the server
@@ -196,6 +211,18 @@ public class ReturnTicketPacketHandler
                     ClientTicketDataHolder.exitStationDirectionIndicator = split.getFirst();
                     ClientTicketDataHolder.exitStation = split.getSecond();
                 }
+
+                break;
+
+            case TICKET_ENTER_POS:
+                ClientTicketDataHolder.enterLocation = s2CReturnTicketPacket.answerBlockPos;
+                ClientTicketDataHolder.enterLocExists = true;
+
+                break;
+
+            case TICKET_EXIT_POS:
+                ClientTicketDataHolder.exitLocation = s2CReturnTicketPacket.answerBlockPos;
+                ClientTicketDataHolder.exitLocExists = true;
 
                 break;
         }
