@@ -31,7 +31,7 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
     private ReturnTicketButton returnTicketButton;
     private ReturnTicketWindow returnTicketWidget;
 
-    @Inject(method = "init", at = @At("TAIL"), remap = false)
+    @Inject(method = "init", at = @At("TAIL"), remap = true)
     public void init(CallbackInfo ci) {
 
         //The Actual Widget that houses the Return Ticket Image
@@ -45,13 +45,13 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
         //this.addWidget(returnTicketWidget);
     }
 
-    @Inject(method = "render", at = @At("TAIL"), remap = false)
+    @Inject(method = "render", at = @At("TAIL"), remap = true)
     public void onRender(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         returnTicketWidget.render(graphics, mouseX, mouseY, delta);
     }
 
     //We have to catch mouse clicks and redirect them to our widget
-    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true, remap = true)
     public void onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         if (returnTicketWidget.mouseClicked(mouseX, mouseY, button))
         {
@@ -60,7 +60,7 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
     }
 
     //Catch mouse release clicks
-    @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true, remap = true)
     public void onMouseReleased(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
         if (returnTicketWidget.mouseReleased(mouseX, mouseY, button))
         {
