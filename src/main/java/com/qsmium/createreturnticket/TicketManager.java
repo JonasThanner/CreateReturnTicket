@@ -109,8 +109,10 @@ public class TicketManager
         //Finally Check if we are even in the same dimension that the ticket was made in
         //Needs to be done before checking if we are near th exit location, because it would be
         //weird to have the game tell you "you need to go there" only to go there and be told "lol actually wrong dim"
-        if(player.level().dimension().location().toString() != returnTicket.getExitDimension())
+        if(!player.level().dimension().location().toString().equals(returnTicket.getExitDimension()))
         {
+            String coc = player.level().dimension().location().toString();
+            String balls = returnTicket.getExitDimension();
             //Display Wrong Dim message
             ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.WRONG_DIM, player);
 
