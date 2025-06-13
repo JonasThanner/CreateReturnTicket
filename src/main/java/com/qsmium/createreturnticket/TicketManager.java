@@ -16,7 +16,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
-import org.openjdk.nashorn.internal.objects.Global;
 
 import java.util.List;
 
@@ -25,6 +24,9 @@ public class TicketManager
     //To redeem a Ticket we have to
     // - Check if Player Ticket is Valid/Not Ripped
     // - Check if Player is withing valid Block distance of Exit Point
+    // - Check if the Player is withing the correct dimension as the exit point dim
+    // -> We dont need to inform the player, because a check not enabling in this, shouldnt even be possible in 99% of circumstances
+    //    and it should have been caught in canRedeemTicket() which informs the player
     public static boolean tryRedeemTicketServerside(ServerPlayer player)
     {
         //Get ReturnTicket
@@ -38,14 +40,12 @@ public class TicketManager
         //If ticket isn't valid we inform the Player of his ticket not being Valid and return
         if(returnTicket.isReturnTicketRipped())
         {
-            player.displayClientMessage(Component.literal("You have no active Return Ticket").withStyle(ChatFormatting.DARK_RED), false);
             return false;
         }
 
         //Check Ticket Validity
         if(!returnTicket.isValid())
         {
-            player.displayClientMessage(Component.literal("Youre Ticket isnt Valid! Your journey needs to be contigous").withStyle(ChatFormatting.DARK_RED), false);
             return false;
         }
 
@@ -55,16 +55,20 @@ public class TicketManager
         if(player.getPosition(0).distanceTo(returnTicket.getExitLocation()) > 10)
         {
             Vec3 blockpos = returnTicket.getExitLocation();
-            ReturnTicketPacketHandler.sendTooFarToPlayer(new BlockPos((int) blockpos.x, (int) blockpos.y, (int) blockpos.z), player);
-
             //player.displayClientMessage(Component.literal("Youre too Far from the Exit Location: " + returnTicket.getExitLocation()).withStyle(ChatFormatting.DARK_RED), false);
+            return false;
+        }
+
+        //Check if the player is in the same dimension as the exit dimension that it was saved in
+        if(player.level().dimension().location().toString() != returnTicket.getExitDimension())
+        {
             return false;
         }
 
         //If everything else is met redeem the Ticket
         //To Redeem Ticket we
         // - Rip the Ticket / Invalidate it
-        // - Teleport the Player to EnterLocation
+        // - Teleport the Player to EnterLocation in the enterDim
         returnTicket.ripReturnTicket();
         player.teleportTo(returnTicket.getEnterLocation().x, returnTicket.getEnterLocation().y, returnTicket.getEnterLocation().z);
         return true;
@@ -99,6 +103,17 @@ public class TicketManager
         if(!returnTicket.isValid())
         {
             ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.TICKET_INVALIDATED, player);
+            return false;
+        }
+
+        //Finally Check if we are even in the same dimension that the ticket was made in
+        //Needs to be done before checking if we are near th exit location, because it would be
+        //weird to have the game tell you "you need to go there" only to go there and be told "lol actually wrong dim"
+        if(player.level().dimension().location().toString() != returnTicket.getExitDimension())
+        {
+            //Display Wrong Dim message
+            ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.WRONG_DIM, player);
+
             return false;
         }
 

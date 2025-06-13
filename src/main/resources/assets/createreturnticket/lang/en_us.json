@@ -4,5 +4,7 @@
   "notification.createreturnticket.ticket_invalid_range_warning": "You are leaving valid ticket range",
   "longNotification.createreturnticket.ticket_invalid_range_warning": "You are too far from your exit location for your journey to count as contiguous. Your Ticket wont be able to be used/updated until you get back into range.",
   "notification.createreturnticket.ticket_too_far": "Too far from exit location!",
-  "longNotification.createreturnticket.ticket_too_far": ""
+  "longNotification.createreturnticket.ticket_too_far": "",
+  "notification.createreturnticket.wrong_dim": "You are in the wrong Dimension",
+  "longNotification.createreturnticket.wrong_dim": "Go to the correct dimension of your exit Station"
 }

@@ -11,7 +11,8 @@ public class NotificationManager
     {
         TICKET_UPDATED,
         TICKET_INVALIDATED,
-        EXIT_TOO_FAR
+        EXIT_TOO_FAR,
+        WRONG_DIM
     }
 
     public static class CRTNotification
@@ -41,6 +42,12 @@ public class NotificationManager
             case TICKET_INVALIDATED:
                 newNotif.notifcationShort = "notification.createreturnticket.ticket_invalid_range_warning";
                 newNotif.notificationLong = "longNotification.createreturnticket.ticket_invalid_range_warning";
+
+                break;
+
+            case WRONG_DIM:
+                newNotif.notifcationShort = "notification.createreturnticket.wrong_dim";
+                newNotif.notificationLong = "longNotification.createreturnticket.wrong_dim";
 
                 break;
         }

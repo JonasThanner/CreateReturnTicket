@@ -94,6 +94,9 @@ public class ModMain
             eventPlayer.sendSystemMessage(Component.literal("Ticket age sent: " + returnTicket.getTicketAge())
                     .withStyle(ChatFormatting.GREEN), false);
 
+            eventPlayer.sendSystemMessage(Component.literal("Ticket exit dim: " + returnTicket.getExitDimension())
+                    .withStyle(ChatFormatting.GREEN), false);
+
             //Send Ticket Informations that need to be sent
             //Send ticket age if its aged
             if(TicketManager.isTicketAged(eventPlayer))
@@ -150,8 +153,8 @@ public class ModMain
                 //           => If no invalidate ticket
                 // - Check if the Player already has a valid Enter Location / ripped their Return Ticket
                 // - If yes do nothing
-                // - If not Save Enter Location & Set new Valid Enter Location / un-rip Return Ticket
-                // -
+                // - If not Save Enter Location & Set new Valid Enter Location / un-rip Return Ticket & save enter dim
+                //
                 if (event.isMounting())
                 {
                     Train currentTrain = Create.RAILWAYS.trains.get(carriage.trainId);
@@ -164,6 +167,7 @@ public class ModMain
                         //And also validate the ticket at the beginning of the journey
                         returnTicket.un_ripReturnTicket();
                         returnTicket.setEnterLocation(player.getPosition(0));
+                        returnTicket.setEnterDimension(player.level().dimension().location().toString());
                         returnTicket.validateTicket();
 
                         //Also save the station
@@ -193,6 +197,7 @@ public class ModMain
                 //If a Player exits a train we have to
                 // - Save the Exit location
                 // - Save the Exit Station
+                // - Save the Exit Dim
                 // - Notify Player of new Exit Location
                 // - Reset Ticket Age
                 if (event.isDismounting() && returnTicket.isValid())
@@ -202,6 +207,9 @@ public class ModMain
 
                     //Save Exit Station
                     TicketManager.getPlayerClosestStation(player, Create.RAILWAYS.trains.get(carriage.trainId), false);
+
+                    //Save the exit dim
+                    returnTicket.setExitDimension(player.level().dimension().location().toString());
 
                     //Notify Player
                     ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.TICKET_UPDATED, player);
