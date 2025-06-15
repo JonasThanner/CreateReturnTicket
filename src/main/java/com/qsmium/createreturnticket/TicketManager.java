@@ -13,8 +13,13 @@ import com.simibubi.create.content.trains.schedule.destination.ScheduleInstructi
 import com.simibubi.create.content.trains.station.GlobalStation;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -60,7 +65,7 @@ public class TicketManager
         }
 
         //Check if the player is in the same dimension as the exit dimension that it was saved in
-        if(player.level().dimension().location().toString() != returnTicket.getExitDimension())
+        if(!player.level().dimension().location().toString().equals(returnTicket.getExitDimension()))
         {
             return false;
         }
@@ -70,7 +75,10 @@ public class TicketManager
         // - Rip the Ticket / Invalidate it
         // - Teleport the Player to EnterLocation in the enterDim
         returnTicket.ripReturnTicket();
-        player.teleportTo(returnTicket.getEnterLocation().x, returnTicket.getEnterLocation().y, returnTicket.getEnterLocation().z);
+        ResourceKey<Level> dimKey = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(returnTicket.getEnterDimension()));
+        ServerLevel targetLevel = player.server.getLevel(dimKey);
+        player.teleportTo(targetLevel, returnTicket.getEnterLocation().x, returnTicket.getEnterLocation().y, returnTicket.getEnterLocation().z, player.getYRot(), player.getXRot());
+        //player.teleportTo(returnTicket.getEnterLocation().x, returnTicket.getEnterLocation().y, returnTicket.getEnterLocation().z);
         return true;
 
     }
@@ -111,8 +119,6 @@ public class TicketManager
         //weird to have the game tell you "you need to go there" only to go there and be told "lol actually wrong dim"
         if(!player.level().dimension().location().toString().equals(returnTicket.getExitDimension()))
         {
-            String coc = player.level().dimension().location().toString();
-            String balls = returnTicket.getExitDimension();
             //Display Wrong Dim message
             ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.WRONG_DIM, player);
 
