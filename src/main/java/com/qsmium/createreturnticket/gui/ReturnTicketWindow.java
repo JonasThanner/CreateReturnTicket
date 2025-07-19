@@ -126,8 +126,6 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta)
     {
-        if (!active) return;
-
         PoseStack poseStack = graphics.pose();
 
         // Push the current pose to preserve the state

@@ -3,6 +3,7 @@ package com.qsmium.createreturnticket.mixins;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.gui.ReturnTicketButton;
+import com.qsmium.createreturnticket.gui.ReturnTicketScreen;
 import com.qsmium.createreturnticket.gui.ReturnTicketWidget;
 import com.qsmium.createreturnticket.gui.ReturnTicketWindow;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
@@ -28,48 +29,46 @@ import java.awt.*;
 @Mixin(InventoryScreen.class)
 public abstract class InventoryMixin extends EffectRenderingInventoryScreen<InventoryMenu>
 {
-    public InventoryMixin(InventoryMenu screenHandler, Inventory playerInventory, Component text) {
+    //Mixin Initialization
+    //We need to add our ReturnTicketScreen here
+    public InventoryMixin(InventoryMenu screenHandler, Inventory playerInventory, Component text)
+    {
         super(screenHandler, playerInventory, text);
+
+        //Create Return TIcket Screen
+        //WHY DOES THIS NOT WORK?! => Need to reassign in init otherwise its null ÒwÓ
+        returnTicketScreen = new ReturnTicketScreen(this);
     }
 
+    private ReturnTicketScreen returnTicketScreen;
     private ReturnTicketButton returnTicketButton;
-    private ReturnTicketWindow returnTicketWidget;
     @Shadow
     private RecipeBookComponent recipeBookComponent;
 
     private boolean recipeBookVisiblePrevious = false;
-
+    
 
     @Inject(method = "init", at = @At("TAIL"), remap = true)
-    public void init(CallbackInfo ci) {
+    public void init(CallbackInfo ci)
+    {
+        //Init ReturnTicketScreen
+        returnTicketScreen = new ReturnTicketScreen(this);
+        returnTicketScreen.init();
 
         //Save the visibility of the recipe book
         recipeBookVisiblePrevious = recipeBookComponent.isVisible();
 
-        //The Actual Widget that houses the Return Ticket Image
-        returnTicketWidget = new ReturnTicketWindow(this.leftPos + 5, this.topPos + 6, 166, 74, minecraft);
-
         returnTicketButton = new ReturnTicketButton(this.leftPos + 140, this.topPos + 60, button -> {
-            returnTicketWidget.toggleActive();
+            this.minecraft.setScreen(returnTicketScreen);
         }, minecraft.player, this);
 
         this.addRenderableWidget(returnTicketButton);
-        //this.addWidget(returnTicketWidget);
     }
 
-    @Inject(method = "render", at = @At("TAIL"), remap = true)
-    public void onRender(GuiGraphics graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        returnTicketWidget.render(graphics, mouseX, mouseY, delta);
-    }
-
-    //We have to catch mouse clicks and redirect them to our widget
+    //At the end of the mouse click we check if we have to move our button
     @Inject(method = "mouseClicked", at = @At("TAIL"), cancellable = true, remap = true)
-    public void onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-        if (returnTicketWidget.mouseClicked(mouseX, mouseY, button))
-        {
-            cir.setReturnValue(true);
-        }
-
+    public void onMouseClickedTail(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir)
+    {
         //Handle recipe book changes
         // => If it changed on this mouse click, save the change and reinitialize the button
         boolean recipeBookChanged = false;
@@ -91,28 +90,4 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
             returnTicketButton.setPosition(this.leftPos + 140, this.topPos + 60);
         }
     }
-
-    //Catch mouse release clicks
-    @Inject(method = "mouseReleased", at = @At("HEAD"), cancellable = true, remap = true)
-    public void onMouseReleased(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir)
-    {
-        if (returnTicketWidget.mouseReleased(mouseX, mouseY, button))
-        {
-            cir.setReturnValue(true);
-        }
-    }
-
-    //Inject the update for our button into the if(recipieBook.mousePressed) which means this code
-    //only gets called when the recipe book gets clicked on
-    @Inject(method = "mouseClicked", at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/screens/recipebook/RecipeBookComponent;mouseClicked(DDI)Z",
-            ordinal = 0,
-            shift = At.Shift.BY, by = 2
-    ), cancellable = true, remap = true)
-    private void onFirstRecipeBookClick(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir)
-    {
-
-    }
-
 }
