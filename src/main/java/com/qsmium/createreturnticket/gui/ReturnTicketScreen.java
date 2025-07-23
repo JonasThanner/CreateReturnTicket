@@ -1,8 +1,11 @@
 package com.qsmium.createreturnticket.gui;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.qsmium.createreturnticket.ModMain;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class ReturnTicketScreen extends Screen
 {
@@ -10,9 +13,16 @@ public class ReturnTicketScreen extends Screen
     private ReturnTicketWindow returnTicketWidget;
     private ReturnTicketScreenCloseButton closeButton;
 
+    public static final ResourceLocation TEXTURE_THREE = new ResourceLocation(ModMain.MODID,"textures/return_ticket_three.png");
+    private static final int TEXTURE_THREE_WIDTH = 256;
+    private static final int TEXTURE_THREE_HEIGHT = 256;
     private static final int RETURN_TICKET_WIDTH = 166;
     private static final int RETURN_TICKET_HEIGHT = 74;
     private static final int CLOSE_BUTTON_DISTANCE = 8;
+    private static final int LOGO_UV_X = 127;
+    private static final int LOGO_UV_Y = 119;
+    private static final int LOGO_UV_WIDTH = 113;
+    private static final int LOGO_UV_HEIGHT = 57;
 
     private Screen parentScreen;
 
@@ -50,8 +60,18 @@ public class ReturnTicketScreen extends Screen
         // This gives the default dark transparent background
         this.renderBackground(guiGraphics);
 
+        //Render the Return Ticket Logo at the top left of the screen
+        //Pose Stack push/pop is just for safety
+        PoseStack poseStack = guiGraphics.pose();
+        poseStack.pushPose();
+
+        guiGraphics.blit(ReturnTicketWindow.TEXTURE2, this.width / 2 - (LOGO_UV_WIDTH / 2), 10, LOGO_UV_X, LOGO_UV_Y, LOGO_UV_WIDTH, LOGO_UV_HEIGHT, ReturnTicketWindow.TEXTURE_2_WIDTH, ReturnTicketWindow.TEXTURE_2_HEIGHT);
+
+        poseStack.popPose();
+
+
         // Render the title text at the top of the screen
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
+        //guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
 
         returnTicketWidget.render(guiGraphics, mouseX, mouseY, partialTick);
 
