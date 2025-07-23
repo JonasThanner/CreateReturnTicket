@@ -59,6 +59,7 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
         recipeBookVisiblePrevious = recipeBookComponent.isVisible();
 
         returnTicketButton = new ReturnTicketButton(this.leftPos + 140, this.topPos + 60, button -> {
+            returnTicketScreen.onOpenScreen();
             this.minecraft.setScreen(returnTicketScreen);
         }, minecraft.player, this);
 

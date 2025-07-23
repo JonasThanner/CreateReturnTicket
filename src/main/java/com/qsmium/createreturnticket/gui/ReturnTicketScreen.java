@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 public class ReturnTicketScreen extends Screen
 {
 
-    private ReturnTicketWindow returnTicketWidget;
+    private ReturnTicketWindow returnTicketWindow;
     private ReturnTicketScreenCloseButton closeButton;
 
     public static final ResourceLocation TEXTURE_THREE = new ResourceLocation(ModMain.MODID,"textures/return_ticket_three.png");
@@ -45,8 +45,8 @@ public class ReturnTicketScreen extends Screen
         super.init();
 
         //The Actual Widget that houses the Return Ticket Image
-        returnTicketWidget = new ReturnTicketWindow(this.width / 2 - (RETURN_TICKET_WIDTH / 2), this.height / 2 - (RETURN_TICKET_HEIGHT / 2), RETURN_TICKET_WIDTH, RETURN_TICKET_HEIGHT, minecraft);
-        //addRenderableWidget(returnTicketWidget);
+        returnTicketWindow = new ReturnTicketWindow(this.width / 2 - (RETURN_TICKET_WIDTH / 2), this.height / 2 - (RETURN_TICKET_HEIGHT / 2), RETURN_TICKET_WIDTH, RETURN_TICKET_HEIGHT, minecraft);
+        //addWidget(returnTicketWindow);
 
         //The Close button
         closeButton = new ReturnTicketScreenCloseButton(this.width - ReturnTicketScreenCloseButton.CLOSE_BUTTON_UV_WIDTH - CLOSE_BUTTON_DISTANCE, CLOSE_BUTTON_DISTANCE, this::backToInv, this);
@@ -66,17 +66,56 @@ public class ReturnTicketScreen extends Screen
         poseStack.pushPose();
 
         guiGraphics.blit(ReturnTicketWindow.TEXTURE2, this.width / 2 - (LOGO_UV_WIDTH / 2), 10, LOGO_UV_X, LOGO_UV_Y, LOGO_UV_WIDTH, LOGO_UV_HEIGHT, ReturnTicketWindow.TEXTURE_2_WIDTH, ReturnTicketWindow.TEXTURE_2_HEIGHT);
-
         poseStack.popPose();
 
-
-        // Render the title text at the top of the screen
-        //guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
-
-        returnTicketWidget.render(guiGraphics, mouseX, mouseY, partialTick);
+        returnTicketWindow.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
 
         //Main Rendering Method => Will render all Widgets
         super.render(guiGraphics, mouseX, mouseY, partialTick);
+    }
+
+    public void onToggleScreen()
+    {
+        //Toggle whenever we open the screen
+        returnTicketWindow.toggleActive();
+    }
+
+    public void onOpenScreen()
+    {
+        onToggleScreen();
+    }
+
+    @Override
+    public boolean mouseDragged(double p_93645_, double p_93646_, int p_93647_, double p_93648_, double p_93649_)
+    {
+        if(returnTicketWindow.mouseDragged(p_93645_, p_93646_, p_93647_, p_93648_, p_93649_))
+        {
+            return true;
+        }
+
+        return super.mouseDragged(p_93645_, p_93646_, p_93647_, p_93648_, p_93649_);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button)
+    {
+        if(returnTicketWindow.mouseReleased(mouseX, mouseY, button))
+        {
+            return true;
+        }
+
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    {
+        if(returnTicketWindow.mouseClicked(mouseX, mouseY, button))
+        {
+            return true;
+        }
+
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -98,6 +137,8 @@ public class ReturnTicketScreen extends Screen
     @Override
     public void onClose()
     {
+        onToggleScreen();
+
         this.minecraft.setScreen(null);
     }
 

@@ -11,9 +11,9 @@ public class SoundUtils {
 
     private static SoundManager soundManager;
 
-    public static void playGlobalSound(Holder<SoundEvent> soundEventHolder, float volume,float pitch)
+    public static void playGlobalSound(Holder<SoundEvent> soundEventHolder, float volume, float pitch)
     {
-        playGlobalSound(soundEventHolder.get(), volume, pitch);
+        playGlobalSound(soundEventHolder.get(), pitch, volume);
     }
 
     public static void playGlobalSound(SoundEvent soundEvent, float volume,float pitch) {

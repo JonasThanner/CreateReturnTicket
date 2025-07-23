@@ -1,5 +1,6 @@
 package com.qsmium.createreturnticket.gui;
 
+import com.qsmium.createreturnticket.SoundUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,6 +11,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
 
@@ -53,20 +55,27 @@ public class ReturnTicketScreenCloseButton extends AbstractWidget
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button)
+    public void onRelease(double mouseX, double mouseY)
     {
         //If clicked on the button
         // => Fullfill pressAction
         if(isMouseOver(mouseX, mouseY))
         {
+            //Play Click sound
+            //I DONT KNOW WHY THIS PLAYS FOUR TIMES OR SOMETHING?? Its super loud and it shouldnt be so the solution is just make it quieter ÓwÒ
+            //SoundUtils.playGlobalSound(SoundEvents.UI_BUTTON_CLICK, 0.25f, 1.0f);
+            // => CLICK SOUND IS HANDLED BY THE RETURN TICKET WINDOW BECAUSE CODE IS SPAGHET
+
             pressAction.run();
-            return true;
+            return;
         }
 
         //If we dont click on the button, we change back to the normal button image
         offset = 0;
 
-        return false;
+        super.onRelease(mouseX, mouseY);
+
+        return;
     }
 
     @Override

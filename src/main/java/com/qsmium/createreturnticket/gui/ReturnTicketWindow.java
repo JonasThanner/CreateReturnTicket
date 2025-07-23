@@ -272,7 +272,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         //Play Click sound
         SoundUtils.playGlobalSound(SoundEvents.UI_BUTTON_CLICK, 1.0f, 1.0f);
 
-        //ticketWidget.toggleActive();
+        ticketWidget.toggleActive();
         active = !active;
         setFocused(active);
 
