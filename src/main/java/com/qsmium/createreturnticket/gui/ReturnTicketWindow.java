@@ -32,7 +32,6 @@ import org.lwjgl.opengl.GL11;
 @Mod.EventBusSubscriber(modid = ModMain.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEventListener
 {
-    public static ReturnTicketWindow instance;
     public static final ResourceLocation TEXTURE = new ResourceLocation(ModMain.MODID,"textures/return_ticket.png");
     public static final ResourceLocation TEXTURE2 = new ResourceLocation(ModMain.MODID, "textures/return_ticket_two.png");
     public static final int TEXTURE_2_WIDTH = 512;
@@ -40,10 +39,11 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
 
     public static final ResourceLocation TEST_MASK = new ResourceLocation(ModMain.MODID,"textures/test_mask.png");
     private final Minecraft client;
-    private final int x;
-    private final int y;
-    private final int width;
-    private final int height;
+    private int x;
+    private int y;
+    private int width;
+    private int height;
+    private ReturnTicketScreen parent;
 
     private final int noTicketGraphicUVx = 409;
     private final int noTicketGraphicUVy = 144;
@@ -59,7 +59,6 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     private final int eastereggOffsetX = 108;
     private final int eastereggOffsetY = -24;
 
-    private boolean active = false;
     public static boolean activeTicket = false;
     //private final List<Button> buttons = new ArrayList<>();
     private boolean mousePressed = false;
@@ -87,7 +86,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
 //    }
 
 
-    public ReturnTicketWindow(int x, int y, int width, int height, Minecraft client)
+    public ReturnTicketWindow(int x, int y, int width, int height, Minecraft client, ReturnTicketScreen parent)
     {
         super(x, y, width, height, null);
         this.client = client;
@@ -95,15 +94,13 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         this.y = y;
         this.width = width;
         this.height = height;
-        instance = this;
-
-
+        this.parent = parent;
 
         //Add our TicketWidget
         ticketWidget = new ReturnTicketWidget(x + 20, y + 12, 110, 50, client);
 
         //Add Close Button
-        closeButton = new ImageButton(x + 150, y + 15, 7, 7, 0, 40, 0, TEXTURE, 512, 256, button -> {closeWindow();});
+        closeButton = new ImageButton(x + 150, y + 15, 7, 7, 0, 40, 0, TEXTURE, 512, 256, button -> {this.clickCloseButton();});
 
 
 
@@ -124,6 +121,22 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
 
     }
 
+    //Class to update the x,y,width height etc.
+    public void UpdateVariables(int x, int y, int width, int height, Minecraft client)
+    {
+        //Update our own variables
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+
+        //Update the children
+        // => Ticket Widget & Button
+        closeButton.setX(x + 150);
+        closeButton.setY(y + 15);
+        ticketWidget.setX(x + 20);
+        ticketWidget.setY(y + 12);
+    }
 
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta)
@@ -261,34 +274,15 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         return false;
     }
 
-//    //Required to not draw tooltips for items in the crafting interface
-//    @Override
-//    public boolean isMouseOver(double mouseX, double mouseY) {
-//        return mouseX >= x && mouseX <= x + 37 && mouseY >= y && mouseY <= y + 57 && active;
-//    }
-
-    public void toggleActive() {
-
-        //Play Click sound
-        SoundUtils.playGlobalSound(SoundEvents.UI_BUTTON_CLICK, 1.0f, 1.0f);
-
-        ticketWidget.toggleActive();
-        active = !active;
-        setFocused(active);
-
-        //Check new Ticket Status
-        ReturnTicketPacketHandler.requestTicketStatus();
-    }
-
     @Override
     public boolean apply()
     {
         return false;
     }
 
-    public static void closeWindow()
+    public void clickCloseButton()
     {
-        instance.toggleActive();
+        parent.backToInv();
     }
 
 

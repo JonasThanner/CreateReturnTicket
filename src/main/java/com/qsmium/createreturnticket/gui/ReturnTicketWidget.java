@@ -117,17 +117,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta)
     {
-        if (!active) return;
-
-
-
-
         PoseStack poseStack = graphics.pose();
-
-        // Bind the texture
-        //Minecraft.getInstance().getTextureManager().bindTexture(TEXTURE);
-
-
 
         //Calculate the rip stages only if the mouse is pressed otherwise we just leave
         //In this we calculate which of the two ripping things we activate

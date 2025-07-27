@@ -34,10 +34,6 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
     public InventoryMixin(InventoryMenu screenHandler, Inventory playerInventory, Component text)
     {
         super(screenHandler, playerInventory, text);
-
-        //Create Return TIcket Screen
-        //WHY DOES THIS NOT WORK?! => Need to reassign in init otherwise its null ÒwÓ
-        returnTicketScreen = new ReturnTicketScreen(this);
     }
 
     private ReturnTicketScreen returnTicketScreen;
@@ -51,15 +47,17 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
     @Inject(method = "init", at = @At("TAIL"), remap = true)
     public void init(CallbackInfo ci)
     {
-        //Init ReturnTicketScreen
+        //Make new TicketScreen
         returnTicketScreen = new ReturnTicketScreen(this);
-        returnTicketScreen.init();
+
+        //Check the ReturnTicket Status when opening the inventory
+        // => We do this here also, so that there is hopefully no visual delay where the ticket pops up when opening the ticket screen
+        ReturnTicketPacketHandler.requestTicketStatus();
 
         //Save the visibility of the recipe book
         recipeBookVisiblePrevious = recipeBookComponent.isVisible();
 
         returnTicketButton = new ReturnTicketButton(this.leftPos + 140, this.topPos + 60, button -> {
-            returnTicketScreen.onOpenScreen();
             this.minecraft.setScreen(returnTicketScreen);
         }, minecraft.player, this);
 
