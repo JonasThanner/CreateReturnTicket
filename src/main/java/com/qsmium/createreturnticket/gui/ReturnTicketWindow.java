@@ -211,6 +211,20 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
 //        return isMouseOver(mouseX, mouseY);
 //    }
 
+
+    //Override the mouseOver so that we can tell minecraft to also give us the mouseReleased when we rip the ticket
+    @Override
+    public boolean isMouseOver(double p_93672_, double p_93673_)
+    {
+        //If the ticket widget is focused we always catch all mouseOvers
+        if(ticketWidget.isFocused())
+        {
+            return true;
+        }
+
+        return super.isMouseOver(p_93672_, p_93673_);
+    }
+
     //Gets Called when the mouse is dragged
     @Override
     public boolean mouseDragged(double p_93645_, double p_93646_, int p_93647_, double p_93648_, double p_93649_)
@@ -225,50 +239,37 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if(active)
+    public boolean mouseReleased(double mouseX, double mouseY, int button)
+    {
+        //Either we release and the ticket widget handles it => We return the widget handler or we release inside then we also handle it
+        if (ticketWidget.mouseReleased(mouseX, mouseY, button))
         {
-            //Either we release and the ticket widget handles it => We return the widget handler or we release inside then we also handle it
-            if(ticketWidget.mouseReleased(mouseX, mouseY, button))
-            {
-                return true;
-            }
-
-            if(closeButton.mouseReleased(mouseX, mouseY, button))
-            {
-                return true;
-            }
-
-            return isMouseOver(mouseX, mouseY);
+            return true;
         }
+
+        if (closeButton.mouseReleased(mouseX, mouseY, button)) {
+            return true;
+        }
+
         return false;
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button)
+    {
+        //Either we click inside the window => We handle it
+        //Or we click somewhere where the ticket handles it => return the ticket handling if it returns true
+        if (ticketWidget.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
 
-        if(active)
-        {
-            //Either we click inside the window => We handle it
-            //Or we click somewhere where the ticket handles it => return the ticket handling if it returns true
-            if(ticketWidget.mouseClicked(mouseX, mouseY, button))
-            {
-                return true;
-            }
+        if (closeButton.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
 
-            if(closeButton.mouseClicked(mouseX, mouseY, button))
-            {
-                return true;
-            }
-
-            //Check if we're clicking on the no ticket area axolotl
-            if(Util.insideBoundsUI((int) mouseX, (int) mouseY, x + noTicketGraphicOffsetX + noTicketGraphicWidth - 65, y + noTicketGraphicOffsetY + noTicketGraphicHeight - 18, x + noTicketGraphicOffsetX+ noTicketGraphicWidth, y + noTicketGraphicOffsetY + noTicketGraphicHeight))
-            {
-                SoundUtils.playGlobalSound(SoundEvents.AXOLOTL_IDLE_AIR, 1.0f, Util.randomRange(0.8f, 1.2f));
-            }
-
-
-            return isMouseOver(mouseX, mouseY);
+        //Check if we're clicking on the no ticket area axolotl
+        if (Util.insideBoundsUI((int) mouseX, (int) mouseY, x + noTicketGraphicOffsetX + noTicketGraphicWidth - 65, y + noTicketGraphicOffsetY + noTicketGraphicHeight - 18, x + noTicketGraphicOffsetX + noTicketGraphicWidth, y + noTicketGraphicOffsetY + noTicketGraphicHeight)) {
+            SoundUtils.playGlobalSound(SoundEvents.AXOLOTL_IDLE_AIR, 1.0f, Util.randomRange(0.8f, 1.2f));
         }
 
         return false;

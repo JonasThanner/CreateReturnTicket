@@ -407,7 +407,8 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button)
+    {
         if(active && mousePressed)
         {
 
@@ -455,6 +456,10 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             mousePressed = false;
             return true;
         }
+
+        //Defocus the ticket widget if we havent done anything
+        setFocused(false);
+
         return false;
     }
 
@@ -661,7 +666,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             timesClickedSqueak = 0;
         }
 
-        setFocused(isActive);
+        //setFocused(isActive);
 
         if(!active)
         {
