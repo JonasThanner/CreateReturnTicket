@@ -223,69 +223,67 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
         //Draw the ticket if its not being ripped apart
         else
         {
-            //We only draw the easteregg aged ticket if the ticket isnt being ripped
-            if(ticketAged && currentRipStage == 0)
+            poseStack.pushPose();
+
+            //=================== Ticket Ripping Animation Explanation ==================
+            //For ripping the ticket we
+            // - Draw a mask to hide the ticket where its "ripped" i.e has air
+            // - Draw the main part of the ticket
+            // - Draw the "backside" of the ticket
+            // => Stencil Mask has to be done before whats being masked out
+            //=================== Ticket Ripping Animation Explanation ==================
+            Util.setupStencilMask();
+            RenderSystem.setShaderTexture(0, ReturnTicketWindow.TEXTURE2);
+            graphics.blit(ReturnTicketWindow.TEXTURE2, this.x, this.y, RIP_BACKGROUND_UV_WIDTH * (currentRipStage - 1), 72, RIP_BACKGROUND_UV_WIDTH, 46, 512, 256);
+
+            //So its the correct Stencil Mode
+            Util.setupStencilTexture(GL11.GL_NOTEQUAL);
+
+            Util.setupStencilTexture();
+            RenderSystem.setShaderTexture(0, TEXTURE);
+            RenderSystem.setShaderTexture(0, ReturnTicketWindow.TEXTURE2);
+
+
+            //Draw the main Ticket
+            // => If the Aged Ticket easteregg gets displayed, display that
+            if(!ticketAged)
             {
-                graphics.blit(TEXTURE, this.x, this.y, 248, 0, 80, this.height, 512, 256);
+                graphics.blit(TEXTURE, this.x, this.y, RETURN_TICKT_UV_X, RETURN_TICKET_UV_Y, RETURN_TICKET_UV_WIDTH - 19, RETURN_TICKET_UV_HEIGHT, 512, 256);
             }
             else
             {
-                poseStack.pushPose();
-
-                //=================== Ticket Ripping Animation Explanation ==================
-                //For ripping the ticket we
-                // - Draw a mask to hide the ticket where its "ripped" i.e has air
-                // - Draw the main part of the ticket
-                // - Draw the "backside" of the ticket
-                // => Stencil Mask has to be done before whats being masked out
-                //=================== Ticket Ripping Animation Explanation ==================
-                Util.setupStencilMask();
-                RenderSystem.setShaderTexture(0, ReturnTicketWindow.TEXTURE2);
-                graphics.blit(ReturnTicketWindow.TEXTURE2, this.x, this.y, RIP_BACKGROUND_UV_WIDTH * (currentRipStage - 1), 72, RIP_BACKGROUND_UV_WIDTH, 46, 512, 256);
-
-                //So its the correct Stencil Mode
-                Util.setupStencilTexture(GL11.GL_NOTEQUAL);
-
-                Util.setupStencilTexture();
-                RenderSystem.setShaderTexture(0, TEXTURE);
-                RenderSystem.setShaderTexture(0, ReturnTicketWindow.TEXTURE2);
-
-
-                //Draw the main Ticket
-                graphics.blit(TEXTURE, this.x, this.y, RETURN_TICKT_UV_X, RETURN_TICKET_UV_Y, RETURN_TICKET_UV_WIDTH - 19, RETURN_TICKET_UV_HEIGHT, 512, 256);
-
-                //Draw the Ticket Naming
-                Font font = Minecraft.getInstance().font;
-                int color = 0x918d8d;
-                int color2 = 0xb987b4;
-
-                //Turn the text into two lines based on length
-                //List<FormattedCharSequence> lines = font.split(FormattedText.of(text), notificationTextWidth);
-
-                //Render the Station Indicators
-                poseStack.pushPose();
-                Util.SafeScaleFromMiddle(poseStack, 0.45f, 0.45f, x + 15, (float)y + 10.5f, font.width(ClientTicketDataHolder.enterStationDirectionIndicator), 6);
-                graphics.drawString(font, ClientTicketDataHolder.enterStationDirectionIndicator, (x + 5), y + 10, color2, false);
-                poseStack.popPose();
-
-                poseStack.pushPose();
-                Util.SafeScaleFromMiddle(poseStack, 0.45f, 0.45f, x + 6, (float)y + 26f, font.width(ClientTicketDataHolder.exitStationDirectionIndicator), 6);
-                graphics.drawString(font, ClientTicketDataHolder.exitStationDirectionIndicator, (x - 10), y + 24, color2, false);
-                poseStack.popPose();
-
-                //Render Text of Actual Station Names
-                graphics.drawString(font, ClientTicketDataHolder.enterStation, x + 4, y + 16, color, false);
-                graphics.drawString(font, ClientTicketDataHolder.exitStation, x + 4, y + 31, color, false);
-
-                //Draw the ripping ticket backside
-                graphics.blit(ReturnTicketWindow.TEXTURE2, this.x, this.y, RIP_BACKGROUND_UV_WIDTH * (currentRipStage - 1), 0, RIP_BACKGROUND_UV_WIDTH, RIP_BACKGROUND_UV_HEIGHT, 512, 256);
-
-
-
-                Util.disableStencil();
-                poseStack.popPose();
-
+                graphics.blit(TEXTURE, this.x, this.y, 248, 0, 80, this.height, 512, 256);
             }
+
+            //Draw the Ticket Naming
+            Font font = Minecraft.getInstance().font;
+            int color = 0x918d8d;
+            int color2 = 0xb987b4;
+
+            //Turn the text into two lines based on length
+            //List<FormattedCharSequence> lines = font.split(FormattedText.of(text), notificationTextWidth);
+
+            //Render the Station Indicators
+            poseStack.pushPose();
+            Util.SafeScaleFromMiddle(poseStack, 0.45f, 0.45f, x + 15, (float)y + 10.5f, font.width(ClientTicketDataHolder.enterStationDirectionIndicator), 6);
+            graphics.drawString(font, ClientTicketDataHolder.enterStationDirectionIndicator, (x + 5), y + 10, color2, false);
+            poseStack.popPose();
+
+            poseStack.pushPose();
+            Util.SafeScaleFromMiddle(poseStack, 0.45f, 0.45f, x + 6, (float)y + 26f, font.width(ClientTicketDataHolder.exitStationDirectionIndicator), 6);
+            graphics.drawString(font, ClientTicketDataHolder.exitStationDirectionIndicator, (x - 10), y + 24, color2, false);
+            poseStack.popPose();
+
+            //Render Text of Actual Station Names
+            graphics.drawString(font, ClientTicketDataHolder.enterStation, x + 4, y + 16, color, false);
+            graphics.drawString(font, ClientTicketDataHolder.exitStation, x + 4, y + 31, color, false);
+
+            //Draw the ripping ticket backside
+            graphics.blit(ReturnTicketWindow.TEXTURE2, this.x, this.y, RIP_BACKGROUND_UV_WIDTH * (currentRipStage - 1), 0, RIP_BACKGROUND_UV_WIDTH, RIP_BACKGROUND_UV_HEIGHT, 512, 256);
+
+
+            Util.disableStencil();
+            poseStack.popPose();
 
 
             //Draw the actual part of the ticket that gets ripped off => Redeeming
@@ -332,9 +330,19 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 
                     //Incase the Animation is done
                     // => Then we stop the anim, i.e set redeemAnimTimer to -1
+                    // => And we close the screen
+                    // => And we send the pre redeem request to start the transit animation
                     if(currentRedeemAnimTime > redeemAnimTime)
                     {
                         currentRedeemAnimTime = -1;
+                        client.setScreen(null);
+
+                        //Send Pre-Redeem Request
+                        //Everything gets handled by the PacketHandler from here on
+                        ReturnTicketPacketHandler.preRedeemTicket();
+
+                        //Return so we dont render the ripped off ticket for one frame
+                        return;
                     }
 
                     //Calculate the float
@@ -346,7 +354,6 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
                     redeemVec = new Vec2(redeemVec.x * (1.0f - (0.1f * delta)), redeemVec.y * (1.0f - (0.1f * delta)));
 
                     basePosVec = redeemBaseVec;
-
                 }
 
 
@@ -409,6 +416,9 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button)
     {
+        //Defocus the ticket widget in all cases
+        setFocused(false);
+
         if(active && mousePressed)
         {
 
@@ -421,10 +431,6 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 //                if (mc.screen instanceof InventoryScreen) {
 //                    mc.setScreen(null);  // Closes the screen
 //                }
-
-                //Send Pre-Redeem Request
-                //Everything gets handled by the PacketHandler from here on
-                ReturnTicketPacketHandler.preRedeemTicket();
 
                 //Activate redeeming animation
                 redeemedTicked = true;
@@ -456,9 +462,6 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             mousePressed = false;
             return true;
         }
-
-        //Defocus the ticket widget if we havent done anything
-        setFocused(false);
 
         return false;
     }
