@@ -49,8 +49,8 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     private final int noTicketGraphicUVy = 144;
     private final int noTicketGraphicWidth = 102;
     private final int noTicketGraphicHeight = 39;
-    private final int noTicketGraphicOffsetX = 25;
-    private final int noTicketGraphicOffsetY = 20;
+    private final int noTicketGraphicOffsetX = 31;
+    private final int noTicketGraphicOffsetY = 19;
 
     private final int eastereggUVx = 442;
     private final int eastereggUVy = 50;
@@ -97,7 +97,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         this.parent = parent;
 
         //Add our TicketWidget
-        ticketWidget = new ReturnTicketWidget(x + 20, y + 12, 110, 50, client);
+        ticketWidget = new ReturnTicketWidget(x + 32, y + 13, 110, 50, client);
 
         //Add Close Button
         closeButton = new ImageButton(x + 150, y + 15, 7, 7, 0, 40, 0, TEXTURE, 512, 256, button -> {this.clickCloseButton();});

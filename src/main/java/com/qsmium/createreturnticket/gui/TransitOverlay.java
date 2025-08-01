@@ -7,6 +7,7 @@ import com.mojang.datafixers.util.Pair;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.Util;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -69,6 +70,7 @@ public class TransitOverlay
         //Arrow Stuff
         private static int arrowY = 100;
         private static int arrowMiddle = 100;
+        private static int lowerArrowMiddle = 200;
 
 
         @Override
@@ -82,6 +84,7 @@ public class TransitOverlay
 
                 arrowY = screenHeight / 8;
                 arrowMiddle = arrowY + (ARROW_UV_HEIGHT / 2);
+                lowerArrowMiddle = screenHeight - arrowY - (ARROW_UV_HEIGHT / 2);
                 arrowAnimCycle = 0;
                 currentAnimTime = 0;
                 animationState = 1;
@@ -111,7 +114,11 @@ public class TransitOverlay
             // => Animate Arrows
             // => Animate Background
             // => Animate Axolotl
+            //Animation State 4 => Closer screen
+            // => Animate the closer
+            // => Animation all other things
             guiGraphics.pose().pushPose();
+            PoseStack poseStack = guiGraphics.pose();
             switch (animationState)
             {
                 case 1:
@@ -125,6 +132,11 @@ public class TransitOverlay
 
                     globalAnimTime += partialTick;
 
+
+                    guiGraphics.flush();
+                    RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+                    poseStack.pushPose();
+                    poseStack.translate(0, 0, 1);
 
                     //Move in FullScreenCovers
                     //Because they are stencils for everything coming after they need to be drawn now
@@ -151,10 +163,10 @@ public class TransitOverlay
 
                     Util.disableStencil();
 
-
-
                     //Draw Animating Arrows
                     animateArrowToDirection(guiGraphics, partialTick, screenWidth, screenHeight);
+
+                    poseStack.popPose();
 
 
                     break;
@@ -169,6 +181,12 @@ public class TransitOverlay
                         globalAnimTime = 0;
                     }
 
+                    //Need to do all this BS to make sure this renders infront of the hotbar
+                    // => I dont know how else to do this ÓwÒ
+                    guiGraphics.flush();
+                    RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+                    poseStack.pushPose();
+                    poseStack.translate(0, 0, 1);
 
                     //animate Background
                     animateBackground(guiGraphics, partialTick, 0.3f, screenWidth, screenHeight);
@@ -178,8 +196,7 @@ public class TransitOverlay
 
                     //Draw Animating Arrows
                     animateArrowToDirection(guiGraphics, partialTick, screenWidth, screenHeight);
-
-
+                    poseStack.popPose();
 
                     break;
 
@@ -239,6 +256,18 @@ public class TransitOverlay
             guiGraphics.blit(MASK_TEX, -10, arrowMiddle, 0, 0, 256, 256, 256, 256);
             poseStack.popPose();
             //================ Upper Covers ===========================
+
+            //================ Lower Covers ===========================
+            poseStack.pushPose();
+            Util.SafeScale(poseStack, 100, coversYScale, -10, lowerArrowMiddle);
+            guiGraphics.blit(MASK_TEX, -10, lowerArrowMiddle, 0, 0, 256, 256, 256, 256);
+            poseStack.popPose();
+
+            poseStack.pushPose();
+            Util.SafeScale(poseStack, 100, -coversYScale, -10, lowerArrowMiddle, 256, 256);
+            guiGraphics.blit(MASK_TEX, -10, lowerArrowMiddle, 0, 0, 256, 256, 256, 256);
+            poseStack.popPose();
+            //================ Lower Covers ===========================
 
             if(coversYScale >= 48.0f * 0.1f)
             {
@@ -322,14 +351,15 @@ public class TransitOverlay
             //Calculate Axolotl Draw Position
             // => Should be so that Axoltl is at center of screen
             int axoX = (screenWidth / 2) - (AXOLOTL_UV_WIDTH / 2);
-            int axoY = (screenHeight / 2) - (AXOLOTL_UV_HEIGHT / 2) - 25;
+            int axoY = (screenHeight / 2) - (AXOLOTL_UV_HEIGHT / 2) - (AXOTRACKS_UV_HEIGHT / 2);
 
             //Calculate AxolotlUV Coordinates
             int axoUVX = AXOLOTL_UV_WIDTH * ((axolotlAnimCycle) % 3);
             int axoUVY = AXOLOTL_UV_HEIGHT * (int) (Math.floor((double) axolotlAnimCycle) / 3.0);
 
-            //Scale down AxoTracks logo
+            //Scale down Axolotl and AxoTracks logo
             guiGraphics.pose().pushPose();
+            Util.SafeScaleFromMiddle(guiGraphics.pose(), 0.8f, 0.8f, axoX, axoY, AXOLOTL_UV_WIDTH, AXOLOTL_UV_HEIGHT + AXOTRACKS_UV_HEIGHT);
 
             //Drawing Axolotl
             guiGraphics.blit(AXOLOTL_TEX, axoX, axoY, axoUVX, axoUVY, AXOLOTL_UV_WIDTH, AXOLOTL_UV_HEIGHT, 512, 256);
@@ -337,7 +367,7 @@ public class TransitOverlay
             //Draw AxoTracks Logo
             guiGraphics.blit(ReturnTicketWindow.TEXTURE2, axoX + +22, axoY + AXOLOTL_UV_HEIGHT, AXOTRACKS_UV_X, AXOTRACKS_UV_Y, AXOTRACKS_UV_WIDTH, AXOTRACKS_UV_HEIGHT, 512, 256);
 
-            Util.SafeScaleFromMiddle(guiGraphics.pose(), 0.5f, 0.5f, axoX, axoY, 512, 256);
+
 
             guiGraphics.pose().popPose();
         }
