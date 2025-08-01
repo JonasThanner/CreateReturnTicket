@@ -1,17 +1,23 @@
 package com.qsmium.createreturnticket.gui;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ClientTicketDataHolder;
 import com.qsmium.createreturnticket.SoundUtils;
 import com.qsmium.createreturnticket.Util;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.Vec2;
 import org.jline.reader.Widget;
+
+import java.util.List;
 
 public class AxolotlTalkingTips extends AbstractWidget implements Widget
 {
@@ -36,13 +42,18 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
     private static final int AXO_BUBBLE_MIDDLE_WIDTH = 1;
     private static final int AXO_BUBBLE_MIDDLE_HEIGHT = 15;
 
+    private static final int AXO_BUBBLE_TEXT_COLOR = 0x522c58;
+
     private static final int BIG_BUBBLE_DISPLAY_TIME = 200;
-    private static final int TIP_NUMBERS = 1;
+    private static final int TIP_NUMBERS = 2;
     private static final int HINT_HITBOX_LARGER = 5;
+    private int BUBBLE_X;
+    private int BUBBLE_Y;
 
     private int displayState = 0; //0 -> Display hint, 2 -> Display bubble. The intermediates are there incase an animation gets added in the future
-    private int bigBubbleDisplayTimer = 0;
+    private int bigBubbleDisplayCurrentTimer = 0;
     private int currentTip = 0;
+    private int currentBubbleLength = AXO_BUBBLE_HINT_UV_WH;
     private boolean clickedDown = false;
 
 
@@ -50,11 +61,21 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
     public AxolotlTalkingTips(int x, int y, int width, int height, Minecraft client)
     {
         super(x, y, AXO_BUBBLE_HINT_UV_WH, AXO_BUBBLE_HINT_UV_WH, null);
+        BUBBLE_X = x;
+        BUBBLE_Y = y - AXO_BUBBLE_LEFT_UV_HEIGHT + AXO_BUBBLE_HINT_UV_WH;
     }
 
     @Override
-    protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+    protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick)
     {
+        //Check the current animation time
+        // => If the biBubbleDisplayCurrentTimer is over the  BIG_BUBBLE_DISPLAY_TIME -> Revert to displaystate 1
+        if(bigBubbleDisplayCurrentTimer >= BIG_BUBBLE_DISPLAY_TIME)
+        {
+            bigBubbleDisplayCurrentTimer = 0;
+            displayState = 0;
+        }
+
         //Different behavior in the renderWidget depending on what we are rendering
         // - If we are in displayState = 0 we just render the little hint display
         switch (displayState)
@@ -63,18 +84,47 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
             case 0:
 
                 //Render the hint display
-                graphics.blit(ReturnTicketWindow.TEXTURE, getX(), getY(), AXO_BUBBLE_HINT_UV_X, AXO_BUBBLE_HINT_UV_Y, AXO_BUBBLE_HINT_UV_WH, AXO_BUBBLE_HINT_UV_WH, 512, 256);
+                guiGraphics.blit(ReturnTicketWindow.TEXTURE, getX(), getY(), AXO_BUBBLE_HINT_UV_X, AXO_BUBBLE_HINT_UV_Y, AXO_BUBBLE_HINT_UV_WH, AXO_BUBBLE_HINT_UV_WH, 512, 256);
 
 
                 break;
 
             //If we render the entire bubble we need to
+            // - Increase anim time
             // - Get the tip text and check how long its going to be
             // - Render the left portion
             // - Render the middle and scale it up by the char size => Should be 1:1 since the middle is 1px wide
             // - Render the right side
             // - Render the text
-            case 1:
+            case 2:
+
+                //Increase Anim time
+                bigBubbleDisplayCurrentTimer++;
+
+                //Get the tip text
+                String tipText = Component.translatable("createreturnticket.axolotltip." + Integer.toString(currentTip)).getString();
+
+                //Check the tip text length => How wide does it need to be
+                Font font = Minecraft.getInstance().font;
+                int neededPixels = font.width(tipText);
+                currentBubbleLength = AXO_BUBBLE_LEFT_UV_WIDTH + AXO_BUBBLE_LEFT_UV_WIDTH + neededPixels;
+
+                //Render left portion
+                guiGraphics.blit(ReturnTicketWidget.TEXTURE, BUBBLE_X, BUBBLE_Y, AXO_BUBBLE_LEFT_UV_X, AXO_BUBBLE_LEFT_UV_Y, AXO_BUBBLE_LEFT_UV_WIDTH, AXO_BUBBLE_LEFT_UV_HEIGHT, 512, 256);
+
+                //Render Middle
+                //!! ONLY WORKS IF WE ASSUME MIDDLE WIDTH = 1 PX
+                PoseStack pose = guiGraphics.pose();
+                pose.pushPose();
+                Util.SafeScale2(pose, neededPixels, 1, BUBBLE_X + AXO_BUBBLE_LEFT_UV_WIDTH, BUBBLE_Y, 512, 256);
+                guiGraphics.blit(ReturnTicketWidget.TEXTURE, BUBBLE_X + AXO_BUBBLE_LEFT_UV_WIDTH, BUBBLE_Y, AXO_BUBBLE_LEFT_UV_X + AXO_BUBBLE_LEFT_UV_WIDTH, AXO_BUBBLE_LEFT_UV_Y, AXO_BUBBLE_MIDDLE_WIDTH, AXO_BUBBLE_MIDDLE_HEIGHT, 512, 256);
+                pose.popPose();
+
+                //Render Right Side
+                guiGraphics.blit(ReturnTicketWidget.TEXTURE, BUBBLE_X + AXO_BUBBLE_LEFT_UV_WIDTH + neededPixels, BUBBLE_Y, AXO_BUBBLE_LEFT_UV_X + AXO_BUBBLE_LEFT_UV_WIDTH + 1, AXO_BUBBLE_LEFT_UV_Y, AXO_BUBBLE_LEFT_UV_WIDTH, AXO_BUBBLE_MIDDLE_HEIGHT, 512, 256);
+
+                //Render Text
+                guiGraphics.drawString(font, tipText, BUBBLE_X + 5, BUBBLE_Y + 4, AXO_BUBBLE_TEXT_COLOR, false);
 
                 break;
         }
@@ -102,7 +152,7 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
         if(isMouseOver(mouseX, mouseY) && clickedDown)
         {
             clickedDown = false;
-            bigBubbleDisplayTimer = 0;
+            bigBubbleDisplayCurrentTimer = 0;
             displayState = 2;
 
             //Loop back to first tip when we went trough all
@@ -145,9 +195,12 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
         }
 
         //mouseOver check incase we have the large bubble
-        else
+        else if (displayState == 2)
         {
-            //TODO: Implement
+            if(mouseX >= BUBBLE_X && mouseX <= BUBBLE_X + currentBubbleLength && mouseY >= BUBBLE_Y && mouseY <= BUBBLE_Y + AXO_BUBBLE_LEFT_UV_HEIGHT)
+            {
+                return true;
+            }
         }
 
         return false;
