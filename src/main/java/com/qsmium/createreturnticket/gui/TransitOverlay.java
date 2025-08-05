@@ -5,15 +5,19 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import com.qsmium.createreturnticket.ModMain;
+import com.qsmium.createreturnticket.ReturnTicketData;
+import com.qsmium.createreturnticket.TicketManager;
 import com.qsmium.createreturnticket.Util;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.opengl.GL11;
@@ -33,16 +37,14 @@ public class TransitOverlay
     public static Action teleportStart;
 
 
-
-    //Arrow Section
-
-
     @SubscribeEvent
     public static void onOverlayRegister(final RegisterGuiOverlaysEvent event)
     {
-        event.registerAboveAll("transit_overlay", new TransitScreenOverlay());
+        event.registerAboveAll("transit_overlay",  new TransitScreenOverlay());
     }
 
+
+    @Mod.EventBusSubscriber(modid = ModMain.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
     private static class TransitScreenOverlay implements IGuiOverlay
     {
         private static final int ARROW_UV_WIDTH = 50;
@@ -72,6 +74,18 @@ public class TransitOverlay
         private static int arrowMiddle = 100;
         private static int lowerArrowMiddle = 200;
 
+        //Emergency Teleport Action
+        @SubscribeEvent
+        public static void onPlayerDamaged(LivingDamageEvent event)
+        {
+            //If we are in the transit overlay state
+            if(TransitScreenOverlay.animationState > 1)
+            {
+                //Emergency go to last overlay state
+                TransitScreenOverlay.animationState = 4;
+                TransitScreenOverlay.globalAnimTime = 0;
+            }
+        }
 
         @Override
         public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight)
