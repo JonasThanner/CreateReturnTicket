@@ -78,7 +78,10 @@ public class TicketManager
         ResourceKey<Level> dimKey = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(returnTicket.getEnterDimension()));
         ServerLevel targetLevel = player.server.getLevel(dimKey);
         player.teleportTo(targetLevel, returnTicket.getEnterLocation().x, returnTicket.getEnterLocation().y, returnTicket.getEnterLocation().z, player.getYRot(), player.getXRot());
-        //player.teleportTo(returnTicket.getEnterLocation().x, returnTicket.getEnterLocation().y, returnTicket.getEnterLocation().z);
+
+        //And finally complete everything by resetting the transitioning state
+        TicketManager.setPlayerTransition(player, false);
+
         return true;
 
     }
@@ -392,5 +395,11 @@ public class TicketManager
     public static ReturnTicketData GetReturnTicket(ServerPlayer player)
     {
         return player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
+    }
+
+    public static void setPlayerTransition(ServerPlayer player, boolean isTransitioning)
+    {
+        ReturnTicketData returnTicket = GetReturnTicket(player);
+        returnTicket.setPlayerTransiting(isTransitioning);
     }
 }

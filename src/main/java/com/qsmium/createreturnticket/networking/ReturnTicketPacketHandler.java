@@ -285,8 +285,12 @@ public class ReturnTicketPacketHandler
                 // Get the player who sent the packet
                 ServerPlayer player = contextSupplier.get().getSender();
                 if (player != null) {
-                    // Example logic to determine the ticket status
+                    //Determine the ticket status
                     boolean ticketRedeemable = TicketManager.canRedeemTicket(player);
+
+                    //Set the Player state to transitioning
+                    // => Important for emergency teleport
+                    TicketManager.setPlayerTransition(player, true);
 
                     // Send response packet back to the client
                     S2CReturnTicketPacket responsePacket = new S2CReturnTicketPacket(ServerToClientWork.TICKET_REDEEMABLE, ticketRedeemable);

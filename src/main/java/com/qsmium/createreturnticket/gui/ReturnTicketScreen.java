@@ -117,11 +117,19 @@ public class ReturnTicketScreen extends Screen
 
     }
 
-    //Back to inventory
-    // - Play the Button Click sound -> The only way we can go back is via a button click so we always play that
     public void backToInv()
     {
-        SoundUtils.playGlobalSound(SoundEvents.UI_BUTTON_CLICK, 0.25f, 1.0f);
+        backToInv(true);
+    }
+
+    //Back to inventory
+    // - Play the Button Click sound -> The only way we can go back is via a button click so we always play that
+    public void backToInv(boolean playSound)
+    {
+        if(playSound)
+        {
+            SoundUtils.playGlobalSound(SoundEvents.UI_BUTTON_CLICK, 0.25f, 1.0f);
+        }
 
         this.minecraft.setScreen(parentScreen);
     }
@@ -139,5 +147,20 @@ public class ReturnTicketScreen extends Screen
     public boolean isPauseScreen()
     {
         return false;
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers)
+    {
+        //Check if the key is the inventory key
+        if (Minecraft.getInstance().options.keyInventory.matches(keyCode, scanCode))
+        {
+            backToInv(false);
+
+            return true;
+        }
+
+        //If not the inv button -> Lets base handle it
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 }

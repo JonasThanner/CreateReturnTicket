@@ -17,6 +17,7 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     private int returnTicketAge = 0; //Counter that ticks up for every tick that the return ticket of a player is active. Needed for Ticket aging easteregg
     private String enterStation = "-";
     private String exitStation = "-";
+    private boolean playerTransiting = false;
 
     public void setEnterLocation(Vec3 newLocation)
     {
@@ -28,6 +29,7 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     }
     public void setEnterDimension(String newDim) { enterDimension = newDim; }
     public void setExitDimension(String newDim) { exitDimension = newDim; }
+    public void setPlayerTransiting(boolean playerTransiting) { this.playerTransiting = playerTransiting; }
     public void ripReturnTicket() { rippedReturnTicket = true; }
     public void un_ripReturnTicket() { rippedReturnTicket = false; }
     public void invalidateTicket() { invalidTicket = true; }
@@ -39,6 +41,7 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     public String getExitStation() { return exitStation; }
     public String getEnterDimension() { return  enterDimension;}
     public String getExitDimension() { return exitDimension; }
+    public boolean isPlayerTransiting() { return playerTransiting; }
 
     //Sets the enter Station
     //If the player enters the train after the enter train after it has left a station but is still

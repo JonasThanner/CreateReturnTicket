@@ -21,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityMountEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -277,6 +278,25 @@ public class ModMain
 
             }
 
+        }
+
+        //Emergency Teleport when a player whos transiting takes damage
+        @SubscribeEvent
+        public static void onPlayerDamaged(LivingDamageEvent event)
+        {
+            //Only execute if this is a server
+            if (event.getEntity() instanceof ServerPlayer serverPlayer)
+            {
+                //If a player takes damage check if theyre transiting
+                // => If so do the emergency redeem
+                ReturnTicketData returnTicket = TicketManager.GetReturnTicket(serverPlayer);
+
+                //If the player is transiting => Emergency Teleport
+                if(returnTicket.isPlayerTransiting())
+                {
+                    TicketManager.tryRedeemTicketServerside(serverPlayer);
+                }
+            }
         }
 
 

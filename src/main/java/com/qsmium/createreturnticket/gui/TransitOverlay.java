@@ -97,7 +97,6 @@ public class TransitOverlay
                 return;
             }
 
-
             //guiGraphics.blit(ReturnTicketWindow.TEXTURE, 0, 0, 0, 100, 150, 150, 512, 256);
             //animateArrowToDirection(guiGraphics, partialTick);
 
