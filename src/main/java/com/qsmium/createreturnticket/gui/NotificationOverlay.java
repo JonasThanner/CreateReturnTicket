@@ -559,7 +559,7 @@ public class NotificationOverlay
         //If we have a duplicate discard all after i
         if(duplicatedDetected)
         {
-            if(duplicateID == 20)
+            if(duplicateID == 0)
             {
                 stackedNotifications.clear();
             }
