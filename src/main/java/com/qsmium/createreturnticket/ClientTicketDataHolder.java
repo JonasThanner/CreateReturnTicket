@@ -19,4 +19,6 @@ public class ClientTicketDataHolder
     public static String exitStation = "-";
     public static String enterStationDirectionIndicator = "";
     public static String exitStationDirectionIndicator = "";
+    public static String enterStationDimension = "";
+    public static String exitStationDimension = "";
 }

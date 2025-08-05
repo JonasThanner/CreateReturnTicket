@@ -538,8 +538,38 @@ public class NotificationOverlay
         }
     }
 
+    //Adds a new notification
+    //If another notification of the same type is already in the queue => Override that notification and discord all afterwards (-> Assumes status change)
     public static void addNotification(NotificationManager.CRTNotification newNotification)
     {
+        //Goes through all notifications and search for duplicate
+        int duplicateID = 0;
+        boolean duplicatedDetected = false;
+        for (int i = 0; i < stackedNotifications.size(); i++)
+        {
+            //If duplicate is detected
+            if(stackedNotifications.get(i).notifcationShort.equals(newNotification.notifcationShort))
+            {
+                duplicateID = i;
+                duplicatedDetected = true;
+                break;
+            }
+        }
+
+        //If we have a duplicate discard all after i
+        if(duplicatedDetected)
+        {
+            if(duplicateID == 20)
+            {
+                stackedNotifications.clear();
+            }
+
+            else
+            {
+                stackedNotifications.subList(duplicateID, stackedNotifications.size()).clear();
+            }
+        }
+
         stackedNotifications.add(newNotification);
     }
 

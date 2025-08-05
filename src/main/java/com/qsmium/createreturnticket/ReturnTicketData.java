@@ -125,6 +125,6 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
 
     private String getStationIndicatorChar(boolean before, boolean after)
     {
-        return before ? "<Leaving from>" : after ? "<Driving to>" : "";
+        return before ? "<Driving to>" : after ? "<Leaving from>" : "";
     }
 }

@@ -178,6 +178,17 @@ public class TicketManager
         player.displayClientMessage(Component.literal(Integer.toString(returnTicket.getTicketAge())), true);
     }
 
+    public static void updatePlayerDimensions(ServerPlayer player)
+    {
+        //Get ReturnTicket
+        ReturnTicketData returnTicket = player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
+
+        if(returnTicket == null)
+            return;
+
+        ReturnTicketPacketHandler.sendTicketDimension(player, returnTicket.getEnterDimension(), returnTicket.getExitDimension());
+    }
+
     //TODO: Find more descriptive name
     //Function that updates the player on their station when they enter/exit a train
     //What its supposed  to do is we give it a player and the train they are on and if they are entering / exiting

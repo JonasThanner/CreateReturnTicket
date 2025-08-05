@@ -3,6 +3,7 @@ package com.qsmium.createreturnticket.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.datafixers.util.Pair;
 import com.qsmium.createreturnticket.ClientTicketDataHolder;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.SoundUtils;
@@ -49,6 +50,9 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     public static final int LEFT_BOX_UV_X = 257;
     public static final int RIGHT_BOX_UV_X = 295;
     public static final int MIDDLE_BOX_UV_X = 262;
+    public static final int DIMENSION_UV_WH = 6;
+    public static final int DIMENSION_UV_X = 0;
+    public static final int DIMENSION_UV_Y = 174;
     private final Minecraft client;
     private final int x;
     private final int y;
@@ -265,18 +269,26 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 
             //Render the Station Indicators
             poseStack.pushPose();
-            Util.SafeScaleFromMiddle(poseStack, 0.45f, 0.45f, x + 15, (float)y + 10.5f, font.width(ClientTicketDataHolder.enterStationDirectionIndicator), 6);
-            graphics.drawString(font, ClientTicketDataHolder.enterStationDirectionIndicator, (x + 5), y + 10, color2, false);
+            float scale = 3.0f / 7.0f;
+            int fontWidthEnterStation = font.width(ClientTicketDataHolder.enterStationDirectionIndicator);
+            Util.SafeScale2(poseStack, scale, scale, x + 24, (float)y + 12f, fontWidthEnterStation, 7);
+            graphics.drawString(font, ClientTicketDataHolder.enterStationDirectionIndicator, x + 24, y + 12, color2, false);
             poseStack.popPose();
 
             poseStack.pushPose();
-            Util.SafeScaleFromMiddle(poseStack, 0.45f, 0.45f, x + 6, (float)y + 26f, font.width(ClientTicketDataHolder.exitStationDirectionIndicator), 6);
-            graphics.drawString(font, ClientTicketDataHolder.exitStationDirectionIndicator, (x - 10), y + 24, color2, false);
+            int fontWidthExitStation = font.width(ClientTicketDataHolder.exitStationDirectionIndicator);
+            Util.SafeScale2(poseStack, scale, scale, x + 13, (float)y + 27f, fontWidthExitStation, 7);
+            graphics.drawString(font, ClientTicketDataHolder.exitStationDirectionIndicator, x + 13, y + 27, color2, false);
             poseStack.popPose();
 
             //Render Text of Actual Station Names
             graphics.drawString(font, ClientTicketDataHolder.enterStation, x + 4, y + 16, color, false);
             graphics.drawString(font, ClientTicketDataHolder.exitStation, x + 4, y + 31, color, false);
+
+            //Draw the Dimension of either exit or enter station
+            //To draw Dimension we have to know the length of the exit/enter station direction indicator. To do so we multiply the font width with 0.45 and add 1px and the round back to int
+            drawStationDimensions(graphics, ClientTicketDataHolder.enterStationDimension , (int) (x + 24 + ((float)fontWidthEnterStation * 0.45f)), y + 12);
+            drawStationDimensions(graphics, ClientTicketDataHolder.exitStationDimension , (int) (x + 13 + ((float)fontWidthExitStation * 0.45f)), y + 27);
 
             //Draw the ripping ticket backside
             graphics.blit(ReturnTicketWindow.TEXTURE2, this.x, this.y, RIP_BACKGROUND_UV_WIDTH * (currentRipStage - 1), 0, RIP_BACKGROUND_UV_WIDTH, RIP_BACKGROUND_UV_HEIGHT, 512, 256);
@@ -508,6 +520,53 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             return true;
         }
         return false;
+    }
+
+    //To draw the station dimension we do the following:
+    // - Check if the requested dimension has an associated ticket
+    // - If it does:
+    //      - Request the station uv x => We assume that in the texture all dim icons are in the same row and 6px long so they are just mapped to integers => x * 6 = UV_X
+    //      - Draw the station and scale it down by 2x
+    // - If it doesnt:
+    //      - Draw the station dimension string after the : and uppercase it => minecraft:the_end => The End
+    private void drawStationDimensions(GuiGraphics graphics, String dimension, int drawX, int drawY)
+    {
+        PoseStack pose = graphics.pose();
+
+        //Check if the station dimension exists
+        //
+        //If the dimension has an icon
+        int dimIcon = DimToIconOrText.DoesDimHaveIcon(dimension);
+        if(dimIcon >= 0)
+        {
+            //Scale down by 3 / Dimension uv height/wdith
+            float scale = 3.0f / ((float) DIMENSION_UV_WH);
+
+            pose.pushPose();
+            Util.SafeScale2(pose, scale, scale, drawX, drawY, DIMENSION_UV_WH, DIMENSION_UV_WH);
+
+            //Draw the Icon at the x and y
+            graphics.blit(TEXTURE, drawX, drawY, DIMENSION_UV_X + (DIMENSION_UV_WH * dimIcon), DIMENSION_UV_Y, DIMENSION_UV_WH, DIMENSION_UV_WH, 512, 256);
+
+            pose.popPose();
+        }
+
+        //If the dimension doesnt have an icon
+        else
+        {
+            //Make the dimension to the correct string
+            // => get only the words after :
+            Pair<String, String> split = Util.SeperateString(dimension, ":");
+            String result = split.getSecond().replaceAll("_", " ").toUpperCase();
+
+            //Render the Dimension text
+            pose.pushPose();
+            float scale = 3.0f / 7.0f;
+            Font font = Minecraft.getInstance().font;
+            Util.SafeScale2(pose, scale, scale, drawX, drawY, font.width(result), 7);
+            graphics.drawString(font, result, drawX, drawY, 0xb987b4, false);
+            pose.popPose();
+        }
     }
 
     //To draw station tooltips, we first check if the mouse is over either the enter or exit location

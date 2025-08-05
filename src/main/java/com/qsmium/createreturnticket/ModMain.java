@@ -105,9 +105,10 @@ public class ModMain
                 ReturnTicketPacketHandler.sendAgedTicketToPlayer(eventPlayer);
             }
 
-            //Send Ticket Stations
+            //Send Ticket Information
             if(returnTicket != null)
             {
+                //Send Station Names
                 ReturnTicketPacketHandler.sendTicketStationNames(eventPlayer, returnTicket.getEnterStation(), returnTicket.getExitStation());
 
                 //Send Enter/Exit Locations
@@ -123,6 +124,9 @@ public class ModMain
                 {
                     ReturnTicketPacketHandler.sendTicketExitPosition(eventPlayer, pos);
                 }
+
+                //Send The Enter/Exit Dimensions
+                ReturnTicketPacketHandler.sendTicketDimension(eventPlayer, returnTicket.getEnterDimension(), returnTicket.getExitDimension());
             }
         }
 
@@ -170,8 +174,11 @@ public class ModMain
                         returnTicket.setEnterDimension(player.level().dimension().location().toString());
                         returnTicket.validateTicket();
 
-                        //Also save the station
+                        //Also save the station and inform the player of it (function internally informs player)
                         TicketManager.getPlayerClosestStation(player, currentTrain, true);
+
+                        //And inform player of the new dimensions
+                        TicketManager.updatePlayerDimensions(player);
                     }
 
                     //If a ticket does exist

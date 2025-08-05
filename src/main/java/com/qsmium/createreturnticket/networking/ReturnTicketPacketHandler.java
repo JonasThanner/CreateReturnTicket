@@ -38,7 +38,8 @@ public class ReturnTicketPacketHandler
         TICKET_AGED,
         TICKET_STATION_NAMES,
         TICKET_ENTER_POS,
-        TICKET_EXIT_POS
+        TICKET_EXIT_POS,
+        TICKET_DIMENSIONS
     }
 
 
@@ -143,6 +144,12 @@ public class ReturnTicketPacketHandler
         INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(ServerToClientWork.TICKET_EXIT_POS, new BlockPos((int) pos.x, (int) pos.y, (int) pos.z)));
     }
 
+    //Sends the Ticket Dimensions seperated by the § char
+    public static void sendTicketDimension(ServerPlayer player, String enterDim, String exitDim)
+    {
+        INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new S2CReturnTicketPacket(ServerToClientWork.TICKET_DIMENSIONS, false, new BlockPos(0, 0, 0), enterDim + "§" + exitDim));
+    }
+
 
 
 
@@ -211,6 +218,17 @@ public class ReturnTicketPacketHandler
                     ClientTicketDataHolder.exitStationDirectionIndicator = split.getFirst();
                     ClientTicketDataHolder.exitStation = split.getSecond();
                 }
+
+                break;
+
+            //Server informs us of new station exit/enter dimensions
+            //They are seperated by the § char
+            case TICKET_DIMENSIONS:
+
+                //Seperate the dimensions
+                Pair<String, String> split = Util.SeperateString(s2CReturnTicketPacket.answerString, "§");
+                ClientTicketDataHolder.enterStationDimension = split.getFirst();
+                ClientTicketDataHolder.exitStationDimension = split.getSecond();
 
                 break;
 
@@ -296,6 +314,8 @@ public class ReturnTicketPacketHandler
                 // Do stuff
             });
         }
+
+
 
         contextSupplier.get().setPacketHandled(true);
     }
