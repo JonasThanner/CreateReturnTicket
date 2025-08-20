@@ -243,7 +243,9 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             //So its the correct Stencil Mode
             Util.setupStencilTexture(GL11.GL_NOTEQUAL);
 
-            Util.setupStencilTexture();
+            //I dont know why this line was here, but if its commented out theres constant OpenGL Errors but im leaving it here incase it was needed / useful and i just dont get the use right now
+            //Util.setupStencilTexture();
+
             RenderSystem.setShaderTexture(0, TEXTURE);
             RenderSystem.setShaderTexture(0, ReturnTicketWindow.TEXTURE2);
 
