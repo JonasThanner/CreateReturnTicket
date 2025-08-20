@@ -159,7 +159,7 @@ public class ModMain
                 // - Check if the Player already has a valid Enter Location / ripped their Return Ticket
                 // - If yes do nothing
                 // - If not Save Enter Location & Set new Valid Enter Location / un-rip Return Ticket & save enter dim
-                //
+                // - Send the player the journey continuation message
                 if (event.isMounting())
                 {
                     Train currentTrain = Create.RAILWAYS.trains.get(carriage.trainId);
@@ -198,8 +198,13 @@ public class ModMain
                         {
                             ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.TICKET_INVALIDATED, player);
                             returnTicket.invalidateTicket();
+
+                            return;
                         }
                     }
+
+                    //Send Player the new Continuation message
+                    ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.JOURNEY_CONTINUING, player);
                 }
 
                 //If a Player exits a train we have to

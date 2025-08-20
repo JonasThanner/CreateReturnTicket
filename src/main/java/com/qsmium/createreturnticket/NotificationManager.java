@@ -9,6 +9,7 @@ public class NotificationManager
 
     public enum NotificationTypes
     {
+        JOURNEY_CONTINUING,
         TICKET_UPDATED,
         TICKET_INVALIDATED,
         EXIT_TOO_FAR,
@@ -27,6 +28,12 @@ public class NotificationManager
 
         switch(newNotification)
         {
+            case JOURNEY_CONTINUING:
+                newNotif.notifcationShort = "notification.createreturnticket.journey_continued";
+                newNotif.notificationLong = "longNotification.createreturnticket.journey_continued";
+
+                break;
+
             case TICKET_UPDATED:
                 newNotif.notifcationShort = "notification.createreturnticket.ticket_updated";
                 newNotif.notificationLong = "longNotification.createreturnticket.ticket_updated";
