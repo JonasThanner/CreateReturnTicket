@@ -166,7 +166,7 @@ public class TransitOverlay
                         ReturnTicketPacketHandler.sendRedeem();
                     }
 
-                    Util.setupStencilTexture();
+                    Util.setupStencilTexture(GL11.GL_EQUAL);
                     RenderSystem.setShaderTexture(0, BACKGROUND_TEX);
                     animateBackground(guiGraphics, partialTick, 0.3f, screenWidth, screenHeight);
 

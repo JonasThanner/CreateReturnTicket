@@ -112,11 +112,6 @@ public class Util
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
     }
 
-    public static void setupStencilTexture()
-    {
-        setupStencilTexture(GL11.GL_KEEP);
-    }
-
     public static void setupStencilTexture(int equalCond)
     {
         // Setup for color buffer filling
