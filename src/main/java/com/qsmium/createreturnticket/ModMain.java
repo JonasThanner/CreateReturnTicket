@@ -230,29 +230,6 @@ public class ModMain
             }
         }
 
-        //TODO: TESTING
-        @SubscribeEvent
-        public static void onUseEvent(PlayerInteractEvent.RightClickItem event)
-        {
-            if(event.getItemStack().is(ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft", "stick"))) && event.getEntity() instanceof ServerPlayer)
-            {
-                ServerPlayer player = (ServerPlayer) event.getEntity();
-                TicketManager.tryRedeemTicketServerside(player);
-            }
-
-            if(event.getItemStack().is(ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft", "stone"))) && event.getEntity() instanceof ServerPlayer)
-            {
-                NotificationManager.newNotification(NotificationManager.NotificationTypes.TICKET_UPDATED);
-            }
-
-            if(event.getItemStack().is(ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft", "stick"))) && event.getEntity() instanceof ServerPlayer)
-            {
-                TransitOverlay.startAnimation = true;
-            }
-
-
-        }
-
         //In the Server Tick Event we need to
         // => Age Player Tickets
         @SubscribeEvent
