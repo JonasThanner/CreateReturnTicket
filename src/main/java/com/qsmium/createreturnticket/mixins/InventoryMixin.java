@@ -26,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.awt.*;
 
-@Mixin(InventoryScreen.class)
+@Mixin(value = InventoryScreen.class, priority = 2000)
 public abstract class InventoryMixin extends EffectRenderingInventoryScreen<InventoryMenu>
 {
     //Mixin Initialization
