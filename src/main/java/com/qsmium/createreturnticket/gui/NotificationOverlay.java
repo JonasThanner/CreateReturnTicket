@@ -70,7 +70,8 @@ public class NotificationOverlay
         private final int notificationWidthX = 134;
         private final int notificationHeighY = 31;
         private final int notificationDisplayHeight = 100;
-        private final float notificationStayLength = 120;
+        private final static int NOTIFICATION_STAY_LENGTH_MASTER = 120;
+        private float notificationStayLength = 120;
         private final int notificationTextWidth = 93;
 
         private final int miniInfoReminderUVx = 470;
@@ -107,7 +108,11 @@ public class NotificationOverlay
             PoseStack poseStack = guiGraphics.pose();
             poseStack.pushPose();
 
+            //Variable adjustments
             currentAnimTime += partialTick;
+
+            //If we have more than one notification waiting, we severly reduce the notifcation stay time
+            notificationStayLength = stackedNotifications.size() > 1 ? NOTIFICATION_STAY_LENGTH_MASTER / 10 : NOTIFICATION_STAY_LENGTH_MASTER;
 
             switch (currentAnimState)
             {

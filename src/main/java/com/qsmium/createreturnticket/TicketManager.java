@@ -292,7 +292,7 @@ public class TicketManager
                     String regex = winningStation.getFilterForRegex();
 
                     //Clip the Regex
-                    stationName = regex.substring(2, regex.length() - 2);
+                    stationName = regex.substring(1, regex.length() - 2);
 
                 }
             }
