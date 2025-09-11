@@ -3,6 +3,7 @@ package com.qsmium.createreturnticket;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
+import com.qsmium.createreturnticket.gui.ReturnTicketWidget;
 import com.qsmium.createreturnticket.gui.ReturnTicketWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -92,6 +93,84 @@ public class Util
         float offsetX = ((texSizeX * scaleX) - (texSizeX)) / 2.0f;
         float offsetY = ((texSizeY * scaleY) - (texSizeY)) / 2.0f;
         poseStack.translate(-offsetX / scaleX, -offsetY / scaleY, 0);
+    }
+
+    //!!! -- AI WRITTEN CODE -- !!!
+    // - Original Code written by Gemini Pro 2.5 and corrected/adjusted by Qsmium
+    public static void DrawNineSlice(
+            GuiGraphics graphics,
+            int renderX, int renderY,
+            int topLeftU, int topLeftV,
+            int cornerWidth, int cornerHeight,
+            int hSliceWidth, int vSliceHeight,
+            float hScale, float vScale,
+            int texSizeX, int texSizeY
+    )
+    {
+        PoseStack poseStack = graphics.pose();
+
+        // --- Extrapolate UV coordinates for all 9 parts ---
+        //These are the texture coordinates for the start of each segment
+        int middleSliceU = topLeftU + cornerWidth;
+        int rightCornerU = topLeftU + cornerWidth + hSliceWidth;
+
+        int middleSliceV = topLeftV + cornerHeight;
+        int bottomCornerV = topLeftV + cornerHeight + vSliceHeight;
+
+        // --- Calculate final screen positions of each segment ---
+        //The width/height of the scaled middle sections on the screen
+        int scaledHSliceWidth = (int) (hSliceWidth * hScale);
+        int scaledVSliceHeight = (int) (vSliceHeight * vScale);
+
+        //These are the screen coordinates for where each segment will be drawn
+        int sliceRenderX = renderX + cornerWidth;
+        int rightCornerRenderX = renderX + cornerWidth + scaledHSliceWidth;
+
+        int sliceRenderY = renderY + cornerHeight;
+        int bottomCornerRenderY = renderY + cornerHeight + scaledVSliceHeight;
+
+        // --- Draw Corners (No scaling) ---
+        // Top-Left
+        graphics.blit(ReturnTicketWidget.TEXTURE, renderX, renderY, topLeftU, topLeftV, cornerWidth, cornerHeight, texSizeX, texSizeY);
+        // Top-Right
+        graphics.blit(ReturnTicketWidget.TEXTURE, rightCornerRenderX, renderY, rightCornerU, topLeftV, cornerWidth, cornerHeight, texSizeX, texSizeY);
+        // Bottom-Left
+        graphics.blit(ReturnTicketWidget.TEXTURE, renderX, bottomCornerRenderY, topLeftU, bottomCornerV, cornerWidth, cornerHeight, texSizeX, texSizeY);
+        // Bottom-Right
+        graphics.blit(ReturnTicketWidget.TEXTURE, rightCornerRenderX, bottomCornerRenderY, rightCornerU, bottomCornerV, cornerWidth, cornerHeight, texSizeX, texSizeY);
+
+        // --- Draw Edges and Center (With scaling) ---
+        // Each scaled part is wrapped in its own push/pop block to isolate the matrix transformations.
+
+        // Top-Center (Horizontal Scale)
+        poseStack.pushPose();
+        SafeScale2(poseStack, hScale, 1.0f, sliceRenderX, renderY, texSizeX, texSizeY);
+        graphics.blit(ReturnTicketWidget.TEXTURE, sliceRenderX, renderY, middleSliceU, topLeftV, hSliceWidth, cornerHeight, texSizeX, texSizeY);
+        poseStack.popPose();
+
+        // Bottom-Center (Horizontal Scale)
+        poseStack.pushPose();
+        SafeScale2(poseStack, hScale, 1.0f, sliceRenderX, bottomCornerRenderY, texSizeX, texSizeY);
+        graphics.blit(ReturnTicketWidget.TEXTURE, sliceRenderX, bottomCornerRenderY, middleSliceU, bottomCornerV, hSliceWidth, cornerHeight, texSizeX, texSizeY);
+        poseStack.popPose();
+
+        // Middle-Left (Vertical Scale)
+        poseStack.pushPose();
+        SafeScale2(poseStack, 1.0f, vScale, renderX, sliceRenderY, texSizeX, texSizeY);
+        graphics.blit(ReturnTicketWidget.TEXTURE, renderX, sliceRenderY, topLeftU, middleSliceV, cornerWidth, vSliceHeight, texSizeX, texSizeY);
+        poseStack.popPose();
+
+        // Middle-Right (Vertical Scale)
+        poseStack.pushPose();
+        SafeScale2(poseStack, 1.0f, vScale, rightCornerRenderX, sliceRenderY, texSizeX, texSizeY);
+        graphics.blit(ReturnTicketWidget.TEXTURE, rightCornerRenderX, sliceRenderY, rightCornerU, middleSliceV, cornerWidth, vSliceHeight, texSizeX, texSizeY);
+        poseStack.popPose();
+
+        // Center (Both Horizontal and Vertical Scale)
+        poseStack.pushPose();
+        SafeScale2(poseStack, hScale, vScale, sliceRenderX, sliceRenderY, texSizeX, texSizeY);
+        graphics.blit(ReturnTicketWidget.TEXTURE, sliceRenderX, sliceRenderY, middleSliceU, middleSliceV, hSliceWidth, vSliceHeight, texSizeX, texSizeY);
+        poseStack.popPose();
     }
 
     public static void setupStencilMask()

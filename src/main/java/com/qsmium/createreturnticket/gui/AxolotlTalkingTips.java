@@ -1,5 +1,6 @@
 package com.qsmium.createreturnticket.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ClientTicketDataHolder;
 import com.qsmium.createreturnticket.SoundUtils;
@@ -37,6 +38,9 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
     private static final int AXO_BUBBLE_HINT_UV_WH = 7;
     private static final int AXO_BUBBLE_LEFT_UV_X = 481;
     private static final int AXO_BUBBLE_LEFT_UV_Y = 119;
+    private static final int AXO_BUBBLE_CORNER_WIDTH = 7;
+    private static final int AXO_BUBBLE_CORNER_HEIGHT = 7;
+
     private static final int AXO_BUBBLE_LEFT_UV_WIDTH = 6;
     private static final int AXO_BUBBLE_LEFT_UV_HEIGHT = 19;
     private static final int AXO_BUBBLE_MIDDLE_WIDTH = 1;
@@ -54,6 +58,7 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
     private int bigBubbleDisplayCurrentTimer = 0;
     private int currentTip = 0;
     private int currentBubbleLength = AXO_BUBBLE_HINT_UV_WH;
+    private int currentBubbleHeight = 1;
     private boolean clickedDown = false;
 
 
@@ -86,7 +91,6 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
                 //Render the hint display
                 guiGraphics.blit(ReturnTicketWindow.TEXTURE, getX(), getY(), AXO_BUBBLE_HINT_UV_X, AXO_BUBBLE_HINT_UV_Y, AXO_BUBBLE_HINT_UV_WH, AXO_BUBBLE_HINT_UV_WH, 512, 256);
 
-
                 break;
 
             //If we render the entire bubble we need to
@@ -104,27 +108,34 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
                 //Get the tip text
                 String tipText = Component.translatable("createreturnticket.axolotltip." + Integer.toString(currentTip)).getString();
 
+                //Do the tip text length and line count handling. We want to balance the line lengths. We do this by trying to always achieve a 3:2 ratio for the text bubble
                 //Check the tip text length => How wide does it need to be
                 Font font = Minecraft.getInstance().font;
                 int neededPixels = font.width(tipText);
-                currentBubbleLength = AXO_BUBBLE_LEFT_UV_WIDTH + AXO_BUBBLE_LEFT_UV_WIDTH + neededPixels;
+                int bubbleTextWidth = (int)((float)neededPixels * 0.6f);
 
-                //Render left portion
-                guiGraphics.blit(ReturnTicketWidget.TEXTURE, BUBBLE_X, BUBBLE_Y, AXO_BUBBLE_LEFT_UV_X, AXO_BUBBLE_LEFT_UV_Y, AXO_BUBBLE_LEFT_UV_WIDTH, AXO_BUBBLE_LEFT_UV_HEIGHT, 512, 256);
+                //Get the amount of lines needed for the 3:2 ratio
+                List<FormattedCharSequence> lines = font.split(FormattedText.of(tipText), bubbleTextWidth);
+                int middleScaling = lines.size() * (font.lineHeight + 2);
+                currentBubbleLength = bubbleTextWidth + AXO_BUBBLE_CORNER_WIDTH + AXO_BUBBLE_CORNER_WIDTH;
+                currentBubbleHeight = middleScaling + AXO_BUBBLE_CORNER_HEIGHT + AXO_BUBBLE_CORNER_HEIGHT;
 
-                //Render Middle
-                //!! ONLY WORKS IF WE ASSUME MIDDLE WIDTH = 1 PX
-                PoseStack pose = guiGraphics.pose();
-                pose.pushPose();
-                Util.SafeScale2(pose, neededPixels, 1, BUBBLE_X + AXO_BUBBLE_LEFT_UV_WIDTH, BUBBLE_Y, 512, 256);
-                guiGraphics.blit(ReturnTicketWidget.TEXTURE, BUBBLE_X + AXO_BUBBLE_LEFT_UV_WIDTH, BUBBLE_Y, AXO_BUBBLE_LEFT_UV_X + AXO_BUBBLE_LEFT_UV_WIDTH, AXO_BUBBLE_LEFT_UV_Y, AXO_BUBBLE_MIDDLE_WIDTH, AXO_BUBBLE_MIDDLE_HEIGHT, 512, 256);
-                pose.popPose();
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
 
-                //Render Right Side
-                guiGraphics.blit(ReturnTicketWidget.TEXTURE, BUBBLE_X + AXO_BUBBLE_LEFT_UV_WIDTH + neededPixels, BUBBLE_Y, AXO_BUBBLE_LEFT_UV_X + AXO_BUBBLE_LEFT_UV_WIDTH + 1, AXO_BUBBLE_LEFT_UV_Y, AXO_BUBBLE_LEFT_UV_WIDTH, AXO_BUBBLE_MIDDLE_HEIGHT, 512, 256);
+                //Render 9 slice speech bubble
+                Util.DrawNineSlice(guiGraphics, getX(), getY() - currentBubbleHeight, AXO_BUBBLE_LEFT_UV_X, AXO_BUBBLE_LEFT_UV_Y, AXO_BUBBLE_CORNER_WIDTH, AXO_BUBBLE_CORNER_HEIGHT, 1, 1, bubbleTextWidth, middleScaling, 512, 256);
+
+                //Render the tiny leftover part of the spech bubble
+                guiGraphics.blit(ReturnTicketWidget.TEXTURE, getX(), getY(), 481, 134, 4, 4, 512, 256);
+
+                RenderSystem.disableBlend();
 
                 //Render Text
-                guiGraphics.drawString(font, tipText, BUBBLE_X + 5, BUBBLE_Y + 4, AXO_BUBBLE_TEXT_COLOR, false);
+                for(int i = 0; i < lines.size(); i++)
+                {
+                    guiGraphics.drawString(font, lines.get(i), getX() + AXO_BUBBLE_CORNER_WIDTH + 2, getY() - currentBubbleHeight + AXO_BUBBLE_CORNER_HEIGHT + i + (i * font.lineHeight) + 2, AXO_BUBBLE_TEXT_COLOR, false);
+                }
 
                 break;
         }
@@ -158,6 +169,9 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
             //Loop back to first tip when we went trough all
             currentTip = (currentTip + 1) % TIP_NUMBERS;
 
+            //Play axo sound
+            SoundUtils.playGlobalSound(SoundEvents.AXOLOTL_IDLE_AIR, 0.25f, 1.2f);
+
             return true;
         }
 
@@ -171,8 +185,6 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
         if(isMouseOver(mouseX, mouseY))
         {
             clickedDown = true;
-
-            super.mouseClicked(mouseX, mouseY, button);
         }
 
         return false;
@@ -197,7 +209,7 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
         //mouseOver check incase we have the large bubble
         else if (displayState == 2)
         {
-            if(mouseX >= BUBBLE_X && mouseX <= BUBBLE_X + currentBubbleLength && mouseY >= BUBBLE_Y && mouseY <= BUBBLE_Y + AXO_BUBBLE_LEFT_UV_HEIGHT)
+            if(mouseX >= getX() && mouseX <= getX() + currentBubbleLength && mouseY >= getY() - currentBubbleHeight && mouseY <= getY())
             {
                 return true;
             }
