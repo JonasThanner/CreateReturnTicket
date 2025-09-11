@@ -86,23 +86,18 @@ public class ModMain
         public static void onPlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event)
         {
             ServerPlayer eventPlayer = (ServerPlayer) event.getEntity();
-            eventPlayer.sendSystemMessage(Component.literal("Your Penalty was reduced by 1!")
-                    .withStyle(ChatFormatting.GREEN), false);
-
-
             ReturnTicketData returnTicket = eventPlayer.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
 
-            eventPlayer.sendSystemMessage(Component.literal("Ticket age sent: " + returnTicket.getTicketAge())
-                    .withStyle(ChatFormatting.GREEN), false);
-
-            eventPlayer.sendSystemMessage(Component.literal("Ticket exit dim: " + returnTicket.getExitDimension())
-                    .withStyle(ChatFormatting.GREEN), false);
+//            eventPlayer.sendSystemMessage(Component.literal("Ticket age sent: " + returnTicket.getTicketAge())
+//                    .withStyle(ChatFormatting.GREEN), false);
+//
+//            eventPlayer.sendSystemMessage(Component.literal("Ticket exit dim: " + returnTicket.getExitDimension())
+//                    .withStyle(ChatFormatting.GREEN), false);
 
             //Send Ticket Informations that need to be sent
             //Send ticket age if its aged
             if(TicketManager.isTicketAged(eventPlayer))
             {
-
                 ReturnTicketPacketHandler.sendAgedTicketToPlayer(eventPlayer);
             }
 

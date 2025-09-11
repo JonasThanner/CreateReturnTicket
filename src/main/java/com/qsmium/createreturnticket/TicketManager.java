@@ -161,7 +161,7 @@ public class TicketManager
         if(returnTicket == null)
             return false;
 
-        return returnTicket.getTicketAge() > 2000;
+        return returnTicket.getTicketAge() > 200000;
     }
 
     public static void ageTicket(ServerPlayer player, int amount)

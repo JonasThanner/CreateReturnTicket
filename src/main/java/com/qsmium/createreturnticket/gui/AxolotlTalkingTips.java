@@ -88,8 +88,16 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
             //If we just render the little hint display
             case 0:
 
+                bigBubbleDisplayCurrentTimer++;
+
+                PoseStack poseStack = guiGraphics.pose();
+                poseStack.pushPose();
+
                 //Render the hint display
+                poseStack.translate(0, Math.sin(((double)bigBubbleDisplayCurrentTimer) / 30.0) / 2.0, 0);
                 guiGraphics.blit(ReturnTicketWindow.TEXTURE, getX(), getY(), AXO_BUBBLE_HINT_UV_X, AXO_BUBBLE_HINT_UV_Y, AXO_BUBBLE_HINT_UV_WH, AXO_BUBBLE_HINT_UV_WH, 512, 256);
+
+                poseStack.popPose();
 
                 break;
 
