@@ -159,6 +159,12 @@ public class ModMain
                 {
                     Train currentTrain = Create.RAILWAYS.trains.get(carriage.trainId);
 
+                    //Catch any issues where the train might be null => This CAN happen
+                    if(currentTrain == null)
+                    {
+                        return;
+                    }
+
                     //Check if no Ticket exists => I.e is it ripped
                     // => I.e is this the first enterLocation?
                     if(returnTicket.isReturnTicketRipped())

@@ -48,7 +48,7 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
 
     private static final int AXO_BUBBLE_TEXT_COLOR = 0x522c58;
 
-    private static final int BIG_BUBBLE_DISPLAY_TIME = 200;
+    private static final int BIG_BUBBLE_DISPLAY_TIME = 1000;
     private static final int TIP_NUMBERS = 2;
     private static final int HINT_HITBOX_LARGER = 5;
     private int BUBBLE_X;
