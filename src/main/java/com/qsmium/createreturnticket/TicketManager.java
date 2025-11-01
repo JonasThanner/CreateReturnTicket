@@ -22,10 +22,43 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TicketManager
 {
+    //For continous portal travel we give players a grace ticket that can be consumed
+    public static class DimensionTravelGrace
+    {
+        public DimensionTravelGrace(ServerPlayer player)
+        {
+            this.player = player;
+        }
+
+        public ServerPlayer player;
+    }
+    public static List<DimensionTravelGrace> dimensionTravelGraces = new ArrayList<DimensionTravelGrace>();
+
+    public static boolean PlayerHasGrace(ServerPlayer player, boolean deleteGrace)
+    {
+        //Check trough graces
+        for (int i = 0; i < dimensionTravelGraces.size(); i++)
+        {
+            if(dimensionTravelGraces.get(i).player == player)
+            {
+                //Delete if requested
+                if(deleteGrace)
+                {
+                    dimensionTravelGraces.remove(i);
+                }
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //To redeem a Ticket we have to
     // - Check if Player Ticket is Valid/Not Ripped
     // - Check if Player is withing valid Block distance of Exit Point

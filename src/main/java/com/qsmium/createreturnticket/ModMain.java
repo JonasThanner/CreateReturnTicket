@@ -187,8 +187,8 @@ public class ModMain
                     else
                     {
                         //Check for Ticket validity
-                        //Valid if Player is within Allowance Distance between previous exit location
-                        if(player.getPosition(0).distanceTo(returnTicket.getExitLocation()) < 120)
+                        //Valid if Player is within Allowance Distance between previous exit location or if they have a grace ticket
+                        if(player.getPosition(0).distanceTo(returnTicket.getExitLocation()) < 120 || TicketManager.PlayerHasGrace(player, false))
                         {
                             //If valid then validate ticket just to make sure
                             returnTicket.validateTicket();
@@ -205,7 +205,11 @@ public class ModMain
                     }
 
                     //Send Player the new Continuation message
-                    ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.JOURNEY_CONTINUING, player);
+                    //Check for grace and consume it => This would be the natural endpoint for a dimensional travel
+                    if(!TicketManager.PlayerHasGrace(player, true))
+                    {
+                        ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.JOURNEY_CONTINUING, player);
+                    }
                 }
 
                 //If a Player exits a train we have to
@@ -214,7 +218,7 @@ public class ModMain
                 // - Save the Exit Dim
                 // - Notify Player of new Exit Location
                 // - Reset Ticket Age
-                if (event.isDismounting() && returnTicket.isValid())
+                if (event.isDismounting() && returnTicket.isValid() && !TicketManager.PlayerHasGrace(player, false))
                 {
                     //Save new Exit Location
                     returnTicket.setExitLocation(player.getPosition(0));
@@ -234,6 +238,16 @@ public class ModMain
                     ReturnTicketPacketHandler.sendWorkToPlayer(player, ReturnTicketPacketHandler.ServerToClientWork.TICKET_AGED, false);
                 }
             }
+        }
+
+        //Players changing dimensions is a bit tricky, because it causes a dismount & mount if they are on the train
+        // => This causes them to go outside of valid ticket range
+        //So we need to somehow correlate this Event with the other Mount & Dismount Event so we can give the player immunity from the distance check and let them continue their journey
+        // - Give the player immunity
+        @SubscribeEvent
+        public static void PlayerChangedDimensionEvent(PlayerEvent.PlayerChangedDimensionEvent event)
+        {
+
         }
 
         //In the Server Tick Event we need to
