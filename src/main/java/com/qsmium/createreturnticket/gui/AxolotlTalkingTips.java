@@ -2,9 +2,7 @@ package com.qsmium.createreturnticket.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.qsmium.createreturnticket.ClientTicketDataHolder;
-import com.qsmium.createreturnticket.SoundUtils;
-import com.qsmium.createreturnticket.Util;
+import com.qsmium.createreturnticket.*;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -13,6 +11,8 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.Vec2;
@@ -31,7 +31,8 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
     //
     //We also want to move the hint bubble every now and then to make it clear that you can click it
     //
-
+    private static final ResourceLocation AXOFONT = new ResourceLocation(ModMain.MODID, "axofont");
+    private static final Style AXOFONT_STYLE = Style.EMPTY.withFont(AXOFONT);
 
     private static final int AXO_BUBBLE_HINT_UV_X = 400;
     private static final int AXO_BUBBLE_HINT_UV_Y = 107;
@@ -113,8 +114,9 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
                 //Increase Anim time
                 bigBubbleDisplayCurrentTimer++;
 
-                //Get the tip text
-                String tipText = Component.translatable("createreturnticket.axolotltip." + Integer.toString(currentTip)).getString();
+                //Get the tip text and run it from component -> string -> component so we can do text modification to it
+                String tipTextStr = Component.translatable("createreturnticket.axolotltip." + Integer.toString(currentTip)).getString();
+                Component tipText = Component.literal(Util.addPaddingBetweenWords(tipTextStr, 4)).withStyle(AXOFONT_STYLE);
 
                 //Do the tip text length and line count handling. We want to balance the line lengths. We do this by trying to always achieve a 3:2 ratio for the text bubble
                 //Check the tip text length => How wide does it need to be
@@ -123,7 +125,8 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
                 int bubbleTextWidth = (int)((float)neededPixels * 0.6f);
 
                 //Get the amount of lines needed for the 3:2 ratio
-                List<FormattedCharSequence> lines = font.split(FormattedText.of(tipText), bubbleTextWidth);
+
+                List<FormattedCharSequence> lines = font.split(tipText, bubbleTextWidth);
                 int middleScaling = lines.size() * (font.lineHeight + 2);
                 currentBubbleLength = bubbleTextWidth + AXO_BUBBLE_CORNER_WIDTH + AXO_BUBBLE_CORNER_WIDTH;
                 currentBubbleHeight = middleScaling + AXO_BUBBLE_CORNER_HEIGHT + AXO_BUBBLE_CORNER_HEIGHT;
@@ -138,6 +141,8 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
                 guiGraphics.blit(ReturnTicketWidget.TEXTURE, getX(), getY(), 481, 134, 4, 4, 512, 256);
 
                 RenderSystem.disableBlend();
+
+
 
                 //Render Text
                 for(int i = 0; i < lines.size(); i++)

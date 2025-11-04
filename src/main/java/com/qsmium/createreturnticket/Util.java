@@ -373,6 +373,28 @@ public class Util
         return new Pair<String, String>(text.substring(0, index), text.substring(index + seperator.length()));
     }
 
+    //WARNING!!! AI GENERATED CODE !!!
+    // - Verified by Human
+    public static String addPaddingBetweenWords(String inputText, int spacesToAdd)
+    {
+        // 1. Handle null or blank input strings gracefully.
+        if (inputText == null || inputText.isBlank()) {
+            return inputText;
+        }
+
+        // 2. Trim leading/trailing whitespace and split by any existing whitespace.
+        // The "\\s+" regex splits on one or more whitespace characters.
+        String[] words = inputText.trim().split("\\s+");
+
+        // 3. Create the padding string. Use Math.max to handle negative input.
+        // String.repeat() is available in Java 11+.
+        String padding = " ".repeat(Math.max(0, spacesToAdd));
+
+        // 4. Join the words back together using the new padding as the delimiter.
+        // String.join is very efficient for this task.
+        return String.join(padding, words);
+    }
+
 
 
 
