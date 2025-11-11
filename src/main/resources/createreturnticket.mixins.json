@@ -8,7 +8,8 @@
     "CarriageMixin"
   ],
   "client": [
-    "InventoryMixin"
+    "InventoryMixin",
+    "CreativeInventoryMixin"
   ],
   "injectors": {
     "defaultRequire": 1
