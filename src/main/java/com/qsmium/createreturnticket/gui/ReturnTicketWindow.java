@@ -1,43 +1,39 @@
 package com.qsmium.createreturnticket.gui;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.SoundUtils;
 import com.qsmium.createreturnticket.Util;
-import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.jline.reader.Widget;
-import org.lwjgl.opengl.GL11;
 
 @OnlyIn(Dist.CLIENT)
-@Mod.EventBusSubscriber(modid = ModMain.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = ModMain.MODID, value = Dist.CLIENT)
 public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEventListener
 {
-    public static final ResourceLocation TEXTURE = new ResourceLocation(ModMain.MODID,"textures/return_ticket.png");
-    public static final ResourceLocation TEXTURE2 = new ResourceLocation(ModMain.MODID, "textures/return_ticket_two.png");
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(ModMain.MODID,"textures/return_ticket.png");
+    public static final ResourceLocation TEXTURE2 = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/return_ticket_two.png");
+    public static final ResourceLocation CLOSE_BUTTON = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/ticket_small_close_button.png");
+    public static final ResourceLocation CLOSE_BUTTON_HOVER = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/ticket_small_close_button_hover.png");
     public static final int TEXTURE_2_WIDTH = 512;
     public static final int TEXTURE_2_HEIGHT = 256;
 
-    public static final ResourceLocation TEST_MASK = new ResourceLocation(ModMain.MODID,"textures/test_mask.png");
     private final Minecraft client;
     private int x;
     private int y;
@@ -79,13 +75,6 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         ticketWidget.mouseDragged(event.getDragX(), event.getDragY());
     }
 
-//    @SubscribeEvent
-//    public void onWorldTickEvent(TickEvent.World)
-//    {
-//
-//    }
-
-
     public ReturnTicketWindow(int x, int y, int width, int height, Minecraft client, ReturnTicketScreen parent)
     {
         super(x, y, width, height, null);
@@ -100,25 +89,11 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         ticketWidget = new ReturnTicketWidget(x + 32, y + 13, 110, 50, client);
 
         //Add Close Button
-        closeButton = new ImageButton(x + 150, y + 15, 7, 7, 0, 40, 0, TEXTURE, 512, 256, button -> {this.clickCloseButton();});
+        WidgetSprites closeButtonSprites = new WidgetSprites(CLOSE_BUTTON, CLOSE_BUTTON_HOVER);
 
+        closeButton = new ImageButton(x + 150, y + 15, 7, 7, closeButtonSprites, button -> {this.clickCloseButton();});
 
-
-
-//        buttons.add(new AlwaysOnTopTexturedButtonWidget(x + 3, y + 46, 24, 8, 37, 0, 16, TEXTURE, button -> {
-//            if (Screen.hasShiftDown() && Screen.hasControlDown()) {
-//                NetworkHandler.INSTANCE.sendToServer(RequestPurseActionC2SPacket.extractAll());
-//            } else if (selectedValue() > 0) {
-//                NetworkHandler.INSTANCE.sendToServer(RequestPurseActionC2SPacket.extract(selectedValue()));
-//                resetSelectedValue();
-//            }
-//        }));
-
-        MinecraftForge.EVENT_BUS.register(this);
-
-
-
-
+        NeoForge.EVENT_BUS.register(this);
     }
 
     //Class to update the x,y,width height etc.

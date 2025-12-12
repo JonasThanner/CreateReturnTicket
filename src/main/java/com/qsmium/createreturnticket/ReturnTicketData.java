@@ -1,11 +1,11 @@
 package com.qsmium.createreturnticket;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.capabilities.AutoRegisterCapability;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.common.util.INBTSerializable;
+import org.jetbrains.annotations.UnknownNullability;
 
-@AutoRegisterCapability
 public class ReturnTicketData implements INBTSerializable<CompoundTag>
 {
     private Vec3 enterLocation = new Vec3(0, 0, 0);
@@ -74,7 +74,7 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
 
 
     @Override
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         //Create new NBT Tag
         final CompoundTag tag = new CompoundTag();
 
@@ -104,30 +104,31 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt) {
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag compoundTag) {
 
         //Retrieve Enter Location from NBT
-        enterLocation = new Vec3(nbt.getDouble("enterX"), nbt.getDouble("enterY"), nbt.getDouble("enterZ"));
+        enterLocation = new Vec3(compoundTag.getDouble("enterX"), compoundTag.getDouble("enterY"), compoundTag.getDouble("enterZ"));
 
         //Retrive Enter Dim from NBT
-        enterDimension = nbt.getString("enterDim");
+        enterDimension = compoundTag.getString("enterDim");
 
         //Retreive Exit Location from NBT
-        exitLocation = new Vec3(nbt.getDouble("exitX"), nbt.getDouble("exitY"), nbt.getDouble("exitZ"));
+        exitLocation = new Vec3(compoundTag.getDouble("exitX"), compoundTag.getDouble("exitY"), compoundTag.getDouble("exitZ"));
 
         //Retrieve Exit Dim from NBT
-        exitDimension = nbt.getString("exitDim");
+        exitDimension = compoundTag.getString("exitDim");
 
         //Get Ticket Data
-        invalidTicket = nbt.getBoolean("invalidTicket");
-        rippedReturnTicket = nbt.getBoolean("ticketRipped");
-        returnTicketAge = nbt.getInt("ticketAge");
-        enterStation = nbt.getString("enterStation");
-        exitStation = nbt.getString("exitStation");
+        invalidTicket = compoundTag.getBoolean("invalidTicket");
+        rippedReturnTicket = compoundTag.getBoolean("ticketRipped");
+        returnTicketAge = compoundTag.getInt("ticketAge");
+        enterStation = compoundTag.getString("enterStation");
+        exitStation = compoundTag.getString("exitStation");
     }
 
     private String getStationIndicatorChar(boolean before, boolean after)
     {
         return before ? "<Driving to>" : after ? "<Leaving from>" : "";
     }
+
 }

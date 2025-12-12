@@ -1,36 +1,24 @@
 package com.qsmium.createreturnticket;
 
-import com.qsmium.createreturnticket.gui.NotificationOverlay;
-import com.qsmium.createreturnticket.gui.TransitOverlay;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
 import com.simibubi.create.content.trains.entity.Train;
-import com.simibubi.create.content.trains.schedule.Schedule;
-import com.simibubi.create.content.trains.schedule.ScheduleEntry;
-import com.simibubi.create.content.trains.schedule.destination.DestinationInstruction;
-import com.simibubi.create.content.trains.schedule.destination.ScheduleInstruction;
-import com.simibubi.create.content.trains.station.GlobalStation;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityMountEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.EntityMountEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -46,26 +34,10 @@ public class ModMain
 
     public ModMain()
     {
-        IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        com.qsmium.createreturnticket.ModRegistry.BLOCKS.register(eventBus);
-        com.qsmium.createreturnticket.ModRegistry.ITEMS.register(eventBus);
-        com.qsmium.createreturnticket.ModRegistry.TILE_ENTITIES.register(eventBus);
-        com.qsmium.createreturnticket.ConfigManager.setup();
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setupClient);
+
     }
 
-    private void setup(final FMLCommonSetupEvent event)
-    {
-        //    MinecraftForge.EVENT_BUS.register(new WhateverEvents());
-    }
-
-    private void setupClient(final FMLClientSetupEvent event)
-    {
-        //for client side only setup
-    }
-
-    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid = MODID)
     public static class CommonEvents
     {
         @SubscribeEvent
@@ -73,26 +45,20 @@ public class ModMain
         {
             event.enqueueWork(() ->
             {
-                ReturnTicketPacketHandler.registerPackets();
+                ReturnTicketAttacher.ATTACHMENT_TYPES.register((IEventBus) event);
             });
         }
 
     }
 
-    @Mod.EventBusSubscriber(modid = MODID)
+    @EventBusSubscriber(modid = MODID, value = Dist.DEDICATED_SERVER)
     public static class ServerEvents
     {
         @SubscribeEvent
         public static void onPlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event)
         {
             ServerPlayer eventPlayer = (ServerPlayer) event.getEntity();
-            ReturnTicketData returnTicket = eventPlayer.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
-
-//            eventPlayer.sendSystemMessage(Component.literal("Ticket age sent: " + returnTicket.getTicketAge())
-//                    .withStyle(ChatFormatting.GREEN), false);
-//
-//            eventPlayer.sendSystemMessage(Component.literal("Ticket exit dim: " + returnTicket.getExitDimension())
-//                    .withStyle(ChatFormatting.GREEN), false);
+            ReturnTicketData returnTicket = eventPlayer.getData(ReturnTicketAttacher.RETURN_TICKET_ATTACHMENT);
 
             //Send Ticket Informations that need to be sent
             //Send ticket age if its aged
@@ -136,13 +102,7 @@ public class ModMain
                 ServerPlayer player = (ServerPlayer) event.getEntityMounting();
 
                 //Get return Ticket
-                ReturnTicketData returnTicket = player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
-
-                //If the returnTicket Capability doesnt exist we return (stupid but for now it works)
-                if (returnTicket == null)
-                {
-                    return;
-                }
+                ReturnTicketData returnTicket = player.getData(ReturnTicketAttacher.RETURN_TICKET_ATTACHMENT);
 
                 //If a Player enters a train the behavior has to be:
                 // - Does the Player have an existing Return Ticket?
@@ -253,8 +213,9 @@ public class ModMain
         //In the Server Tick Event we need to
         // => Age Player Tickets
         @SubscribeEvent
-        public static void onTickEvent(TickEvent.ServerTickEvent event)
+        public static void onTickEvent(ServerTickEvent event)
         {
+
             //Get all players
             List<ServerPlayer> players = event.getServer().getPlayerList().getPlayers();
 

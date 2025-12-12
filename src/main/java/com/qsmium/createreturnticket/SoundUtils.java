@@ -5,7 +5,6 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 
 public class SoundUtils {
 
@@ -13,7 +12,7 @@ public class SoundUtils {
 
     public static void playGlobalSound(Holder<SoundEvent> soundEventHolder, float volume, float pitch)
     {
-        playGlobalSound(soundEventHolder.get(), pitch, volume);
+        playGlobalSound(soundEventHolder.value(), pitch, volume);
     }
 
     public static void playGlobalSound(SoundEvent soundEvent, float volume,float pitch) {

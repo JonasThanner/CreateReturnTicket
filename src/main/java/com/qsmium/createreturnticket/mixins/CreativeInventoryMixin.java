@@ -1,22 +1,23 @@
 package com.qsmium.createreturnticket.mixins;
 
-import com.qsmium.createreturnticket.gui.ReturnTicketButton;
 import com.qsmium.createreturnticket.gui.ReturnTicketScreen;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
-import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
-import org.checkerframework.common.returnsreceiver.qual.This;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.awt.*;
+
+import static com.qsmium.createreturnticket.gui.ReturnTicketWidget.TICKET_BUTTON;
+import static com.qsmium.createreturnticket.gui.ReturnTicketWidget.TICKET_BUTTON_HOVER;
 
 
 @Mixin(value = CreativeModeInventoryScreen.class, priority = 2000)
@@ -24,7 +25,7 @@ public class CreativeInventoryMixin extends Screen
 {
 
     private ReturnTicketScreen m_returnTicketScreen;
-    private ReturnTicketButton m_returnTicketButton;
+    private ImageButton m_returnTicketButton;
     @Shadow
     private static CreativeModeTab selectedTab;
 
@@ -43,9 +44,10 @@ public class CreativeInventoryMixin extends Screen
         // => We do this here also, so that there is hopefully no visual delay where the ticket pops up when opening the ticket screen
         ReturnTicketPacketHandler.requestTicketStatus();
 
-        m_returnTicketButton = new ReturnTicketButton(self.getGuiLeft() + 130, self.getGuiTop() + 18, button -> {
+        WidgetSprites ticketButtonSprite = new WidgetSprites(TICKET_BUTTON, TICKET_BUTTON_HOVER);
+        m_returnTicketButton = new ImageButton(self.getGuiLeft() + 130, self.getGuiTop() + 18, 20, 20, ticketButtonSprite, button -> {
             self.getMinecraft().setScreen(m_returnTicketScreen);
-        }, self.getMinecraft().player, self);
+        });
 
         this.addRenderableWidget(m_returnTicketButton);
 

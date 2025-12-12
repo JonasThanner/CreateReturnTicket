@@ -2,29 +2,29 @@ package com.qsmium.createreturnticket.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.datafixers.util.Pair;
 import com.qsmium.createreturnticket.Keybinds;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.NotificationManager;
 import com.qsmium.createreturnticket.Util;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import org.lwjgl.opengl.GL11;
-
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = ModMain.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@OnlyIn(Dist.CLIENT)
+@EventBusSubscriber(modid = ModMain.MODID, value = Dist.CLIENT)
 public class NotificationOverlay
 {
     //Class that Serves to display notifications that are sent to the player
@@ -56,43 +56,44 @@ public class NotificationOverlay
     public static boolean expandInfoKeyClicked = false;
     public static List<NotificationManager.CRTNotification> stackedNotifications = new ArrayList<NotificationManager.CRTNotification>();
 
+
     @SubscribeEvent
-    public static void onOverlayRegister(final RegisterGuiOverlaysEvent event)
+    public static void onOverlayRegister(final RegisterGuiLayersEvent event)
     {
-        event.registerAboveAll("notification_overlay", new NotificationOverlay.NotificationOverlayScreen());
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "notification_overlay"), NotificationOverlay.NotificationOverlayScreen::render);
     }
 
-    private static class NotificationOverlayScreen implements IGuiOverlay
+    private static class NotificationOverlayScreen
     {
 
-        private final int notificationUVx = 166;
-        private final int notificationUVy = 100;
-        private final int notificationWidthX = 134;
-        private final int notificationHeighY = 31;
-        private final int notificationDisplayHeight = 100;
-        private final static int NOTIFICATION_STAY_LENGTH_MASTER = 120;
-        private float notificationStayLength = 120;
-        private final int notificationTextWidth = 93;
+        private static final int notificationUVy = 100;
+        private static final int notificationUVx = 166;
+        private static final int notificationWidthX = 134;
+        private static final int notificationHeighY = 31;
+        private static final int notificationDisplayHeight = 100;
+        private static final int NOTIFICATION_STAY_LENGTH_MASTER = 120;
+        private static float notificationStayLength = 120;
+        private static final int notificationTextWidth = 93;
 
-        private final int miniInfoReminderUVx = 470;
-        private final int miniInfoReminderUVy = 0;
-        private final int miniInfoWidthX = 32;
-        private final int miniInfoHeightY = 12;
-        private final int miniInfoTextWidth = 26; //Max width that the text inside the box is allowed to take up
+        private static final int miniInfoReminderUVx = 470;
+        private static final int miniInfoReminderUVy = 0;
+        private static final int miniInfoWidthX = 32;
+        private static final int miniInfoHeightY = 12;
+        private static final int miniInfoTextWidth = 26; //Max width that the text inside the box is allowed to take up
 
-        private final int bigInfoTopUVx = 167;
-        private final int bigInfoTopUVy = 151;
-        private final int bigInfoTopWidthX = 118;
-        private final int bigInfoTopHeightY = 2;
+        private static final int bigInfoTopUVx = 167;
+        private static final int bigInfoTopUVy = 151;
+        private static final int bigInfoTopWidthX = 118;
+        private static final int bigInfoTopHeightY = 2;
 
-        private final int bigInfoMiddleUVx = 167;
-        private final int bigInfoMiddleUVy = 153;
-        private final int bigInfoMiddleHeightY = 9;
+        private static final int bigInfoMiddleUVx = 167;
+        private static final int bigInfoMiddleUVy = 153;
+        private static final int bigInfoMiddleHeightY = 9;
 
-        private final int bigInfoBottomUVx = 167;
-        private final int bigInfoBottomUVy = 176;
-        private final int bigInfoBottomHeightY = 8;
-        private final int bigInfoTextWidth = 110;
+        private static final int bigInfoBottomUVx = 167;
+        private static final int bigInfoBottomUVy = 176;
+        private static final int bigInfoBottomHeightY = 8;
+        private static final int bigInfoTextWidth = 110;
 
         public static NotifcationState currentAnimState = NotifcationState.HIDDEN;
         public static float currentAnimTime = 0;
@@ -102,14 +103,15 @@ public class NotificationOverlay
         //Function that renders the actual notification graphics
         //Inside the Render Method we run our "state machine"
         //In this case defined by switch cases lol
-        @Override
-        public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight)
+        public static void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker)
         {
+            int screenWidth = guiGraphics.guiWidth();
+            int screenHeight = guiGraphics.guiHeight();
             PoseStack poseStack = guiGraphics.pose();
             poseStack.pushPose();
 
             //Variable adjustments
-            currentAnimTime += partialTick;
+            currentAnimTime += deltaTracker.getRealtimeDeltaTicks();
 
             //If we have more than one notification waiting, we severly reduce the notifcation stay time
             notificationStayLength = stackedNotifications.size() > 1 ? NOTIFICATION_STAY_LENGTH_MASTER / 10 : NOTIFICATION_STAY_LENGTH_MASTER;
@@ -439,7 +441,7 @@ public class NotificationOverlay
 
         }
 
-        private void drawTopNotification(GuiGraphics guiGraphics, int x, int y)
+        private static void drawTopNotification(GuiGraphics guiGraphics, int x, int y)
         {
 
             //Draw Notification
@@ -459,7 +461,7 @@ public class NotificationOverlay
 
         }
 
-        private void drawMiniNotifier(GuiGraphics guiGraphics, int x, int y)
+        private static void drawMiniNotifier(GuiGraphics guiGraphics, int x, int y)
         {
             //Draw the actual notifier
             guiGraphics.blit(ReturnTicketWidget.TEXTURE, x, y, miniInfoReminderUVx, miniInfoReminderUVy, miniInfoWidthX, miniInfoHeightY, 512, 256);
@@ -485,7 +487,7 @@ public class NotificationOverlay
             poseStack.popPose();
         }
 
-        private void drawNotificationShadow(GuiGraphics guiGraphics, int x, int y)
+        private static void drawNotificationShadow(GuiGraphics guiGraphics, int x, int y)
         {
             guiGraphics.blit(ReturnTicketWidget.TEXTURE, x, y + notificationHeighY, notificationUVx, notificationUVy + notificationHeighY, notificationWidthX, 2, 512, 256);
 
@@ -497,7 +499,7 @@ public class NotificationOverlay
         // - Render Top
         // - Render the necessary amount of middle sections
         // - Render Bottom
-        private void drawBigInfo(GuiGraphics guiGraphics, int x, int y)
+        private static void drawBigInfo(GuiGraphics guiGraphics, int x, int y)
         {
             //Calculate neededMiddleSections
             String text = Component.translatable(stackedNotifications.get(0).notificationLong).getString();
@@ -529,7 +531,7 @@ public class NotificationOverlay
         //Function that calculates the height that the big notifier has to take up to accomodate all of the different
         //Notifications that can exist
         //TODO: Actually implement this functionality
-        private int bigInfoHeight()
+        private static int bigInfoHeight()
         {
             //Calculate neededMiddleSections
             String text = Component.translatable(stackedNotifications.get(0).notificationLong).getString();

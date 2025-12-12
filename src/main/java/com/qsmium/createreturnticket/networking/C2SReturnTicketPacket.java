@@ -1,31 +1,24 @@
 package com.qsmium.createreturnticket.networking;
 
+import com.qsmium.createreturnticket.ModMain;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
-public class C2SReturnTicketPacket
+public record C2SReturnTicketPacket(ReturnTicketPacketHandler.ClientToServerWork work) implements CustomPacketPayload
 {
+    public static final CustomPacketPayload.Type<C2SReturnTicketPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "C2SReturnTicketPacket"));
 
+    public static final StreamCodec<FriendlyByteBuf, C2SReturnTicketPacket> STREAM_CODEC = StreamCodec.composite(
+            NeoForgeStreamCodecs.enumCodec(ReturnTicketPacketHandler.ClientToServerWork.class),
+            C2SReturnTicketPacket::work,
+            C2SReturnTicketPacket::new
+    );
 
-
-    public final ReturnTicketPacketHandler.ClientToServerWork clientToServerWork;
-
-    public C2SReturnTicketPacket(C2SReturnTicketPacket c2SRedeemReturnTicketPacket, FriendlyByteBuf friendlyByteBuf)
-    {
-        this(friendlyByteBuf.readEnum(ReturnTicketPacketHandler.ClientToServerWork.class));
-    }
-
-    public C2SReturnTicketPacket(FriendlyByteBuf friendlyByteBuf)
-    {
-        this(friendlyByteBuf.readEnum(ReturnTicketPacketHandler.ClientToServerWork.class));
-    }
-
-    public C2SReturnTicketPacket(ReturnTicketPacketHandler.ClientToServerWork clientToServerWork)
-    {
-        this.clientToServerWork = clientToServerWork;
-    }
-
-    public void encode(FriendlyByteBuf friendlyByteBuf)
-    {
-        friendlyByteBuf.writeEnum(clientToServerWork);
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 }

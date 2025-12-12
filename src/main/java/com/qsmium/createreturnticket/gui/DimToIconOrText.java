@@ -1,5 +1,9 @@
 package com.qsmium.createreturnticket.gui;
 
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+
+@OnlyIn(Dist.CLIENT)
 public class DimToIconOrText
 {
     //This class is responsible for returning:

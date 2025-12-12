@@ -16,10 +16,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.Vec2;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jline.reader.Widget;
 
 import java.util.List;
 
+@OnlyIn(Dist.CLIENT)
 public class AxolotlTalkingTips extends AbstractWidget implements Widget
 {
     //In this class we render the small bubble that you can click to get tips from the axolotl in the ticket screen
@@ -31,7 +34,7 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
     //
     //We also want to move the hint bubble every now and then to make it clear that you can click it
     //
-    private static final ResourceLocation AXOFONT = new ResourceLocation(ModMain.MODID, "axofont");
+    private static final ResourceLocation AXOFONT = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "axofont");
     private static final Style AXOFONT_STYLE = Style.EMPTY.withFont(AXOFONT);
 
     private static final int AXO_BUBBLE_HINT_UV_X = 400;

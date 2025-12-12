@@ -14,9 +14,12 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec2;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.swing.*;
 
+@OnlyIn(Dist.CLIENT)
 public class ReturnTicketScreenCloseButton extends AbstractWidget
 {
 

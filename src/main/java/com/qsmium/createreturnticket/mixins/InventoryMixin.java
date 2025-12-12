@@ -1,30 +1,24 @@
 package com.qsmium.createreturnticket.mixins;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.qsmium.createreturnticket.ModMain;
-import com.qsmium.createreturnticket.gui.ReturnTicketButton;
 import com.qsmium.createreturnticket.gui.ReturnTicketScreen;
-import com.qsmium.createreturnticket.gui.ReturnTicketWidget;
-import com.qsmium.createreturnticket.gui.ReturnTicketWindow;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.InventoryMenu;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.awt.*;
+import static com.qsmium.createreturnticket.gui.ReturnTicketWidget.TICKET_BUTTON;
+import static com.qsmium.createreturnticket.gui.ReturnTicketWidget.TICKET_BUTTON_HOVER;
 
 @Mixin(value = InventoryScreen.class, priority = 2000)
 public abstract class InventoryMixin extends EffectRenderingInventoryScreen<InventoryMenu>
@@ -37,7 +31,7 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
     }
 
     private ReturnTicketScreen returnTicketScreen;
-    private ReturnTicketButton returnTicketButton;
+    private ImageButton returnTicketButton;
     @Shadow
     private RecipeBookComponent recipeBookComponent;
 
@@ -57,9 +51,10 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
         //Save the visibility of the recipe book
         recipeBookVisiblePrevious = recipeBookComponent.isVisible();
 
-        returnTicketButton = new ReturnTicketButton(this.leftPos + 140, this.topPos + 60, button -> {
+        WidgetSprites ticketButtonSprite = new WidgetSprites(TICKET_BUTTON, TICKET_BUTTON_HOVER);
+        returnTicketButton = new ImageButton(this.leftPos + 140, this.topPos + 60, 20, 20, ticketButtonSprite, button -> {
             this.minecraft.setScreen(returnTicketScreen);
-        }, minecraft.player, this);
+        });
 
         this.addRenderableWidget(returnTicketButton);
     }

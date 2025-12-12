@@ -5,47 +5,46 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import com.qsmium.createreturnticket.ModMain;
-import com.qsmium.createreturnticket.ReturnTicketData;
-import com.qsmium.createreturnticket.TicketManager;
 import com.qsmium.createreturnticket.Util;
 import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import org.lwjgl.opengl.GL11;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = ModMain.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@OnlyIn(Dist.CLIENT)
+@EventBusSubscriber(modid = ModMain.MODID, value = Dist.CLIENT)
 public class TransitOverlay
 {
-    public static final ResourceLocation MASK_TEX = new ResourceLocation(ModMain.MODID,"textures/mask.png");
-    public static final ResourceLocation BACKGROUND_TEX = new ResourceLocation(ModMain.MODID,"textures/background.png");
+    public static final ResourceLocation MASK_TEX = ResourceLocation.fromNamespaceAndPath(ModMain.MODID,"textures/mask.png");
+    public static final ResourceLocation BACKGROUND_TEX = ResourceLocation.fromNamespaceAndPath(ModMain.MODID,"textures/background.png");
 
-    public static final ResourceLocation AXOLOTL_TEX = new ResourceLocation(ModMain.MODID,"textures/axolotl_transit_animation.png");
+    public static final ResourceLocation AXOLOTL_TEX = ResourceLocation.fromNamespaceAndPath(ModMain.MODID,"textures/axolotl_transit_animation.png");
     public static boolean startAnimation = false;
     public static Action teleportStart;
 
 
     @SubscribeEvent
-    public static void onOverlayRegister(final RegisterGuiOverlaysEvent event)
+    public static void onOverlayRegister(final RegisterGuiLayersEvent event)
     {
-        event.registerAboveAll("transit_overlay",  new TransitScreenOverlay());
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "axoTransitOverlay"), TransitScreenOverlay::render);
     }
 
 
-    @Mod.EventBusSubscriber(modid = ModMain.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
-    private static class TransitScreenOverlay implements IGuiOverlay
+    @EventBusSubscriber(modid = ModMain.MODID, value = Dist.CLIENT)
+    private static class TransitScreenOverlay
     {
         private static final int ARROW_UV_WIDTH = 50;
         private static final int ARROW_UV_HEIGHT = 18;
@@ -87,9 +86,11 @@ public class TransitOverlay
             }
         }
 
-        @Override
-        public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight)
+        public static void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker)
         {
+            int screenHeight = guiGraphics.guiHeight();
+            int screenWidth = guiGraphics.guiWidth();
+
             //Animation Setup Stuff
             if(startAnimation)
             {
@@ -135,7 +136,7 @@ public class TransitOverlay
             switch (animationState)
             {
                 case 1:
-                    if(arrowSlideInAnim(guiGraphics, partialTick, 10, screenWidth, screenHeight))
+                    if(arrowSlideInAnim(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 10, screenWidth, screenHeight))
                     {
                         animationState = 2;
                     }
@@ -143,7 +144,7 @@ public class TransitOverlay
 
                 case 2:
 
-                    globalAnimTime += partialTick;
+                    globalAnimTime += deltaTracker.getGameTimeDeltaTicks();
 
 
                     guiGraphics.flush();
@@ -157,7 +158,7 @@ public class TransitOverlay
                     // => Time to send the redeem request
                     Util.setupStencilMask();
                     RenderSystem.setShaderTexture(0, MASK_TEX);
-                    if(animateFullscreenCovers(guiGraphics, partialTick, 0.2f, screenWidth,screenHeight))
+                    if(animateFullscreenCovers(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 0.2f, screenWidth,screenHeight))
                     {
                         globalAnimTime = 0;
                         animationState = 3;
@@ -168,16 +169,16 @@ public class TransitOverlay
 
                     Util.setupStencilTexture(GL11.GL_EQUAL);
                     RenderSystem.setShaderTexture(0, BACKGROUND_TEX);
-                    animateBackground(guiGraphics, partialTick, 0.3f, screenWidth, screenHeight);
+                    animateBackground(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 0.3f, screenWidth, screenHeight);
 
                     RenderSystem.setShaderTexture(0, AXOLOTL_TEX);
                     //Animate Axolotl
-                    animateAxolotl(guiGraphics, partialTick, 8f, screenWidth , screenHeight);
+                    animateAxolotl(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 8f, screenWidth , screenHeight);
 
                     Util.disableStencil();
 
                     //Draw Animating Arrows
-                    animateArrowToDirection(guiGraphics, partialTick, screenWidth, screenHeight);
+                    animateArrowToDirection(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), screenWidth, screenHeight);
 
                     poseStack.popPose();
 
@@ -186,7 +187,7 @@ public class TransitOverlay
 
                 case 3:
 
-                    globalAnimTime += partialTick;
+                    globalAnimTime += deltaTracker.getGameTimeDeltaTicks();
 
                     if(globalAnimTime > 200)
                     {
@@ -202,26 +203,26 @@ public class TransitOverlay
                     poseStack.translate(0, 0, 1);
 
                     //animate Background
-                    animateBackground(guiGraphics, partialTick, 0.3f, screenWidth, screenHeight);
+                    animateBackground(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 0.3f, screenWidth, screenHeight);
 
                     //Animate Axolotl
-                    animateAxolotl(guiGraphics, partialTick, 8f, screenWidth , screenHeight);
+                    animateAxolotl(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 8f, screenWidth , screenHeight);
 
                     //Draw Animating Arrows
-                    animateArrowToDirection(guiGraphics, partialTick, screenWidth, screenHeight);
+                    animateArrowToDirection(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), screenWidth, screenHeight);
                     poseStack.popPose();
 
                     break;
 
                 case 4:
 
-                    globalAnimTime += partialTick;
+                    globalAnimTime += deltaTracker.getGameTimeDeltaTicks();
 
 
                     //Animate closing
                     Util.setupStencilMask();
                     RenderSystem.setShaderTexture(0, ReturnTicketWidget.TEXTURE);
-                    if(animateCloser(guiGraphics, partialTick, 1f,screenWidth, screenHeight))
+                    if(animateCloser(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 1f,screenWidth, screenHeight))
                     {
                         animationRunning = false;
                         Util.setupStencilTexture(GL11.GL_NOTEQUAL);
@@ -231,15 +232,15 @@ public class TransitOverlay
 
                     Util.setupStencilTexture(GL11.GL_NOTEQUAL);
                     RenderSystem.setShaderTexture(0, BACKGROUND_TEX);
-                    animateBackground(guiGraphics, partialTick, 0.3f, screenWidth, screenHeight);
+                    animateBackground(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 0.3f, screenWidth, screenHeight);
 
                     //Animate Axolotl
                     RenderSystem.setShaderTexture(0, AXOLOTL_TEX);
-                    animateAxolotl(guiGraphics, partialTick, 8f, screenWidth , screenHeight);
+                    animateAxolotl(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 8f, screenWidth , screenHeight);
 
                     //Draw Animating Arrows
                     RenderSystem.setShaderTexture(0, ReturnTicketWidget.TEXTURE);
-                    animateArrowToDirection(guiGraphics, partialTick, screenWidth, screenHeight);
+                    animateArrowToDirection(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), screenWidth, screenHeight);
 
                     Util.disableStencil();
 

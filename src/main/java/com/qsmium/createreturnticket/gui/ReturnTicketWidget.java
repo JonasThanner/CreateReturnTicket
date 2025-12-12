@@ -23,8 +23,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.Vec2;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jline.reader.Widget;
 import org.joml.Quaternionf;
 import org.lwjgl.opengl.GL11;
@@ -37,7 +37,9 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
 
     public static ReturnTicketWidget INSTANCE;
 
-    public static final ResourceLocation TEXTURE = new ResourceLocation(ModMain.MODID,"textures/return_ticket.png");
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(ModMain.MODID,"textures/return_ticket.png");
+    public static final ResourceLocation TICKET_BUTTON = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/ticket_inventory_button.png");
+    public static final ResourceLocation TICKET_BUTTON_HOVER = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/ticket_inventory_button_hover.png");
     public static final int RETURN_TICKET_UV_WIDTH = 98;
     public static final int RETURN_TICKET_UV_HEIGHT = 50;
     public static final int RETURN_TICKT_UV_X = 20;

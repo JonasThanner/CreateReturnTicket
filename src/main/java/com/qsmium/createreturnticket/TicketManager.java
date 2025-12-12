@@ -68,11 +68,7 @@ public class TicketManager
     public static boolean tryRedeemTicketServerside(ServerPlayer player)
     {
         //Get ReturnTicket
-        ReturnTicketData returnTicket = player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
-
-        //Return if no Ticket Capability found
-        if(returnTicket == null)
-            return false;
+        ReturnTicketData returnTicket = player.getData(ReturnTicketAttacher.RETURN_TICKET_ATTACHMENT);
 
         //Check Existence of Ticket
         //If ticket isn't valid we inform the Player of his ticket not being Valid and return
@@ -108,7 +104,7 @@ public class TicketManager
         // - Rip the Ticket / Invalidate it
         // - Teleport the Player to EnterLocation in the enterDim
         returnTicket.ripReturnTicket();
-        ResourceKey<Level> dimKey = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(returnTicket.getEnterDimension()));
+        ResourceKey<Level> dimKey = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(returnTicket.getEnterDimension()));
         ServerLevel targetLevel = player.server.getLevel(dimKey);
         player.teleportTo(targetLevel, returnTicket.getEnterLocation().x, returnTicket.getEnterLocation().y, returnTicket.getEnterLocation().z, player.getYRot(), player.getXRot());
 
@@ -141,7 +137,7 @@ public class TicketManager
     public static boolean canRedeemTicket(ServerPlayer player)
     {
         //Get ReturnTicket
-        ReturnTicketData returnTicket = player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
+        ReturnTicketData returnTicket = player.getData(ReturnTicketAttacher.RETURN_TICKET_ATTACHMENT);
 
         //Check Ticket Validity
         if(!returnTicket.isValid())
@@ -177,7 +173,7 @@ public class TicketManager
     public static boolean hasTicket(ServerPlayer player)
     {
         //Get ReturnTicket
-        ReturnTicketData returnTicket = player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
+        ReturnTicketData returnTicket = player.getData(ReturnTicketAttacher.RETURN_TICKET_ATTACHMENT);
 
         //Return if no Ticket Capability found
         if(returnTicket == null)
@@ -189,7 +185,7 @@ public class TicketManager
     public static boolean isTicketAged(ServerPlayer player)
     {
         //Get ReturnTicket
-        ReturnTicketData returnTicket = player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
+        ReturnTicketData returnTicket = player.getData(ReturnTicketAttacher.RETURN_TICKET_ATTACHMENT);
 
         if(returnTicket == null)
             return false;
@@ -200,7 +196,7 @@ public class TicketManager
     public static void ageTicket(ServerPlayer player, int amount)
     {
         //Get ReturnTicket
-        ReturnTicketData returnTicket = player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
+        ReturnTicketData returnTicket = player.getData(ReturnTicketAttacher.RETURN_TICKET_ATTACHMENT);
 
         if(returnTicket == null)
             return;
@@ -217,7 +213,7 @@ public class TicketManager
     public static void updatePlayerDimensions(ServerPlayer player)
     {
         //Get ReturnTicket
-        ReturnTicketData returnTicket = player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
+        ReturnTicketData returnTicket = player.getData(ReturnTicketAttacher.RETURN_TICKET_ATTACHMENT);
 
         if(returnTicket == null)
             return;
@@ -427,7 +423,7 @@ public class TicketManager
 
     public static ReturnTicketData GetReturnTicket(ServerPlayer player)
     {
-        return player.getCapability(ReturnTicketAttacher.RETURN_TICKETS_MANAGER).orElse(null);
+        return player.getData(ReturnTicketAttacher.RETURN_TICKET_ATTACHMENT);
     }
 
     public static void setPlayerTransition(ServerPlayer player, boolean isTransitioning)

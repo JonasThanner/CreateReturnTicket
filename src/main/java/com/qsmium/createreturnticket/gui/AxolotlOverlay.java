@@ -1,61 +1,57 @@
 package com.qsmium.createreturnticket.gui;
 
 import com.qsmium.createreturnticket.ModMain;
-import com.qsmium.createreturnticket.NotificationManager;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@Mod.EventBusSubscriber(modid = ModMain.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@OnlyIn(Dist.CLIENT)
+@EventBusSubscriber(modid = ModMain.MODID, value = Dist.CLIENT)
 public class AxolotlOverlay
 {
-
     @SubscribeEvent
-    public static void onOverlayRegister(final RegisterGuiOverlaysEvent event)
+    public static void onOverlayRegister(final RegisterGuiLayersEvent event)
     {
-        event.registerAboveAll("axolotl_overlay", new AxolotlOverlay.AxolotlOverlayScreen());
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "axolotl_overlay"), AxolotlOverlay.AxolotlOverlayScreen::render);
     }
 
-    private static class AxolotlOverlayScreen implements IGuiOverlay
+    public static class AxolotlOverlayScreen
     {
+        private static final int axolotlSleepingUVx = 284;
+        private static final int axolotlSleepingUVy = 169;
+        private static final int axolotlSleepingWidth = 48;
+        private static final int axolotlSleepingHeight = 15;
 
-        private final int axolotlSleepingUVx = 284;
-        private final int axolotlSleepingUVy = 169;
-        private final int axolotlSleepingWidth = 48;
-        private final int axolotlSleepingHeight = 15;
+        private static final int axolotlHotbarUVx = 332;
+        private static final int axolotlHotbarUVy = 169;
+        private static final int axolotlHotbarWidth = 40;
+        private static final int axolotlHotbarHeight = 15;
 
-        private final int axolotlHotbarUVx = 332;
-        private final int axolotlHotbarUVy = 169;
-        private final int axolotlHotbarWidth = 40;
-        private final int axolotlHotbarHeight = 15;
+        private static final int axolotlBrownUVx = 373;
+        private static final int axolotlBrownUVy = 166;
+        private static final int axolotlBrownWidth = 35;
+        private static final int axolotlBrownHeight = 18;
 
-        private final int axolotlBrownUVx = 373;
-        private final int axolotlBrownUVy = 166;
-        private final int axolotlBrownWidth = 35;
-        private final int axolotlBrownHeight = 18;
+        private static final int axolotlPairUVx = 366;
+        private static final int axolotlPairUVy = 115;
+        private static final int axolotlPairWidth = 42;
+        private static final int axolotlPairHeight = 51;
 
-        private final int axolotlPairUVx = 366;
-        private final int axolotlPairUVy = 115;
-        private final int axolotlPairWidth = 42;
-        private final int axolotlPairHeight = 51;
+        private static final int axolotlYellowUVx = 408;
+        private static final int axolotlYellowUVy = 104;
+        private static final int axolotlYellowWidth = 25;
+        private static final int axolotlYellowHeight = 39;
 
-        private final int axolotlYellowUVx = 408;
-        private final int axolotlYellowUVy = 104;
-        private final int axolotlYellowWidth = 25;
-        private final int axolotlYellowHeight = 39;
-
-
-
-        @Override
-        public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight)
+        public static void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker)
         {
+            int screenHeight = guiGraphics.guiHeight();
+            int screenWidth = guiGraphics.guiWidth();
+
             if(ReturnTicketWidget.eastereggActive)
             {
                 //Draw Axolotl sleeping on bottom right side
@@ -92,8 +88,5 @@ public class AxolotlOverlay
             }
 
         }
-
-
-
     }
 }

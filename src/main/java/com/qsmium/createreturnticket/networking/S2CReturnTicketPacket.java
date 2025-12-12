@@ -1,31 +1,16 @@
 package com.qsmium.createreturnticket.networking;
 
+import com.qsmium.createreturnticket.ModMain;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
-public class S2CReturnTicketPacket
+public record S2CReturnTicketPacket(ReturnTicketPacketHandler.ServerToClientWork serverToClientWork, boolean answerTypeBoolean, BlockPos answerBlockPos, String answerString) implements  CustomPacketPayload
 {
-
-
-    public final ReturnTicketPacketHandler.ServerToClientWork serverToClientWork;
-    public final boolean answerTypeBoolean;
-    public final BlockPos answerBlockPos;
-    public final String answerString;
-
-
-    public S2CReturnTicketPacket(S2CReturnTicketPacket s2CReturnTicketPacket, FriendlyByteBuf friendlyByteBuf)
-    {
-        //All supported types get loaded in a row
-        //The first type to get put into the bytebuff also needs to be the first to get loaded => FIFO
-        // => So the answerType needs to be the last thing put into the bytebuff
-        this(friendlyByteBuf.readEnum(ReturnTicketPacketHandler.ServerToClientWork.class), friendlyByteBuf.readBoolean());
-    }
-
-    public S2CReturnTicketPacket(FriendlyByteBuf friendlyByteBuf)
-    {
-        this(friendlyByteBuf.readEnum(ReturnTicketPacketHandler.ServerToClientWork.class), friendlyByteBuf.readBoolean(), friendlyByteBuf.readBlockPos(), friendlyByteBuf.readUtf());
-    }
-
     //For making a packet with just a string
     public S2CReturnTicketPacket(ReturnTicketPacketHandler.ServerToClientWork serverToClientWork, String answerString)
     {
@@ -44,22 +29,23 @@ public class S2CReturnTicketPacket
         this(serverToClientWork, answerResultBoolean, new BlockPos(0, 0, 0), "");
     }
 
-    //For Returns that use boolean as return type
-    public S2CReturnTicketPacket(ReturnTicketPacketHandler.ServerToClientWork serverToClientWork, boolean answerResultBoolean, BlockPos blockpos, String answerString)
-    {
-        this.serverToClientWork = serverToClientWork;
-        this.answerTypeBoolean = answerResultBoolean;
-        this.answerBlockPos = blockpos;
-        this.answerString = answerString;
-    }
+    public static final CustomPacketPayload.Type<S2CReturnTicketPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "S2CReturnTicketPacket"));
 
-    public void encode(FriendlyByteBuf friendlyByteBuf)
-    {
-        friendlyByteBuf.writeEnum(serverToClientWork);
-        friendlyByteBuf.writeBoolean(answerTypeBoolean);
-        friendlyByteBuf.writeBlockPos(answerBlockPos);
-        friendlyByteBuf.writeUtf(answerString);
-    }
+    public static final StreamCodec<FriendlyByteBuf, S2CReturnTicketPacket> STREAM_CODEC = StreamCodec.composite(
+            NeoForgeStreamCodecs.enumCodec(ReturnTicketPacketHandler.ServerToClientWork.class),
+            S2CReturnTicketPacket::serverToClientWork,
+            ByteBufCodecs.BOOL,
+            S2CReturnTicketPacket::answerTypeBoolean,
+            BlockPos.STREAM_CODEC,
+            S2CReturnTicketPacket::answerBlockPos,
+            ByteBufCodecs.STRING_UTF8,
+            S2CReturnTicketPacket::answerString,
+            S2CReturnTicketPacket::new
+    );
 
+    @Override
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
 
 }

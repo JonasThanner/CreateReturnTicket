@@ -11,11 +11,14 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.lwjgl.opengl.GL11;
 
+@OnlyIn(Dist.CLIENT)
 public class ReturnTicketScreen extends Screen
 {
-    public static final ResourceLocation TEXTURE_THREE = new ResourceLocation(ModMain.MODID,"textures/return_ticket_three.png");
+    public static final ResourceLocation TEXTURE_THREE = ResourceLocation.fromNamespaceAndPath(ModMain.MODID,"textures/return_ticket_three.png");
     private static final int TEXTURE_THREE_WIDTH = 256;
     private static final int TEXTURE_THREE_HEIGHT = 256;
     private static final int RETURN_TICKET_WIDTH = 166;
@@ -86,7 +89,7 @@ public class ReturnTicketScreen extends Screen
     {
         // First, render the background
         // This gives the default dark transparent background
-        this.renderBackground(guiGraphics);
+        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
 
         //Render the Return Ticket Logo at the top middle of the screen
         //Pose Stack push/pop is just for safety
