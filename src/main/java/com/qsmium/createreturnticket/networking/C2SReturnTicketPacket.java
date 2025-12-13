@@ -9,7 +9,7 @@ import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 public record C2SReturnTicketPacket(ReturnTicketPacketHandler.ClientToServerWork work) implements CustomPacketPayload
 {
-    public static final CustomPacketPayload.Type<C2SReturnTicketPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "C2SReturnTicketPacket"));
+    public static final CustomPacketPayload.Type<C2SReturnTicketPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "c2s_return_ticket_packet"));
 
     public static final StreamCodec<FriendlyByteBuf, C2SReturnTicketPacket> STREAM_CODEC = StreamCodec.composite(
             NeoForgeStreamCodecs.enumCodec(ReturnTicketPacketHandler.ClientToServerWork.class),

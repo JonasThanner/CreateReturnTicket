@@ -14,6 +14,6 @@ public class ReturnTicketAttacher
 
     //Register Return Ticket Data
     public static final Supplier<AttachmentType<ReturnTicketData>> RETURN_TICKET_ATTACHMENT = ATTACHMENT_TYPES.register(
-            "returnTicket", () -> AttachmentType.serializable(ReturnTicketData::new).build()
+            "return_ticket", () -> AttachmentType.serializable(ReturnTicketData::new).build()
     );
 }

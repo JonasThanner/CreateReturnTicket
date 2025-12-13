@@ -32,24 +32,24 @@ public class ModMain
     public static final String MODID = "createreturnticket";
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public ModMain()
+    public ModMain(IEventBus modEventBus)
     {
-
+        ReturnTicketAttacher.ATTACHMENT_TYPES.register(modEventBus);
     }
 
-    @EventBusSubscriber(modid = MODID)
-    public static class CommonEvents
-    {
-        @SubscribeEvent
-        public static void commonSetup(FMLCommonSetupEvent event)
-        {
-            event.enqueueWork(() ->
-            {
-                ReturnTicketAttacher.ATTACHMENT_TYPES.register((IEventBus) event);
-            });
-        }
-
-    }
+//    @EventBusSubscriber(modid = MODID)
+//    public static class CommonEvents
+//    {
+//        @SubscribeEvent
+//        public static void commonSetup(FMLCommonSetupEvent event)
+//        {
+//            event.enqueueWork(() ->
+//            {
+//                ReturnTicketAttacher.ATTACHMENT_TYPES.register(NeoForge.EVENT_BUS);
+//            });
+//        }
+//
+//    }
 
     @EventBusSubscriber(modid = MODID, value = Dist.DEDICATED_SERVER)
     public static class ServerEvents
@@ -240,7 +240,7 @@ public class ModMain
 
         //Emergency Teleport when a player whos transiting takes damage
         @SubscribeEvent
-        public static void onPlayerDamaged(LivingDamageEvent event)
+        public static void onPlayerDamaged(LivingDamageEvent.Post event)
         {
             //Only execute if this is a server
             if (event.getEntity() instanceof ServerPlayer serverPlayer)

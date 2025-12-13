@@ -60,7 +60,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     private boolean mousePressed = false;
     private int currentRipStage = 0;
 
-    private ReturnTicketWidget ticketWidget;
+    private static ReturnTicketWidget ticketWidget;
     private ImageButton closeButton;
 
     @SubscribeEvent
@@ -69,11 +69,11 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         RenderSystem.recordRenderCall(() -> Minecraft.getInstance().getMainRenderTarget().enableStencil());
     }
 
-    @SubscribeEvent
-    public void onMouseDraggedEvent(ScreenEvent.MouseDragged event)
-    {
-        ticketWidget.mouseDragged(event.getDragX(), event.getDragY());
-    }
+//    @SubscribeEvent
+//    public static void onMouseDraggedEvent(ScreenEvent.MouseDragged event)
+//    {
+//        ticketWidget.mouseDragged(event.getDragX(), event.getDragY());
+//    }
 
     public ReturnTicketWindow(int x, int y, int width, int height, Minecraft client, ReturnTicketScreen parent)
     {

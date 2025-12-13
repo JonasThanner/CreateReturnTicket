@@ -18,6 +18,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import org.lwjgl.opengl.GL11;
 
 import javax.swing.*;
@@ -39,12 +40,12 @@ public class TransitOverlay
     @SubscribeEvent
     public static void onOverlayRegister(final RegisterGuiLayersEvent event)
     {
-        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "axoTransitOverlay"), TransitScreenOverlay::render);
+        event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "axo_transit_overlay"), TransitScreenOverlay::render);
     }
 
 
     @EventBusSubscriber(modid = ModMain.MODID, value = Dist.CLIENT)
-    private static class TransitScreenOverlay
+    public static class TransitScreenOverlay
     {
         private static final int ARROW_UV_WIDTH = 50;
         private static final int ARROW_UV_HEIGHT = 18;
@@ -75,7 +76,7 @@ public class TransitOverlay
 
         //Emergency Teleport Action
         @SubscribeEvent
-        public static void onPlayerDamaged(LivingDamageEvent event)
+        public static void onPlayerDamaged(LivingDamageEvent.Post event)
         {
             //If we are in the transit overlay state
             if(TransitScreenOverlay.animationState > 1)

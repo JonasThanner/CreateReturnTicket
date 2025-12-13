@@ -29,7 +29,7 @@ public record S2CReturnTicketPacket(ReturnTicketPacketHandler.ServerToClientWork
         this(serverToClientWork, answerResultBoolean, new BlockPos(0, 0, 0), "");
     }
 
-    public static final CustomPacketPayload.Type<S2CReturnTicketPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "S2CReturnTicketPacket"));
+    public static final CustomPacketPayload.Type<S2CReturnTicketPacket> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "s2c_return_ticket_packet"));
 
     public static final StreamCodec<FriendlyByteBuf, S2CReturnTicketPacket> STREAM_CODEC = StreamCodec.composite(
             NeoForgeStreamCodecs.enumCodec(ReturnTicketPacketHandler.ServerToClientWork.class),

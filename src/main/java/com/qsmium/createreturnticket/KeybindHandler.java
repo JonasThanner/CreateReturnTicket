@@ -12,20 +12,9 @@ import net.neoforged.neoforge.common.NeoForge;
 @EventBusSubscriber(modid = ModMain.MODID, value = net.neoforged.api.distmarker.Dist.CLIENT)
 public class KeybindHandler {
 
-    // Register keybind during client setup
-    public static void init() {
-        //FMLJavaModLoadingContext.get().getModEventBus().addListener(KeybindHandler::clientSetup);
-    }
-
-    @SubscribeEvent
-    public static void clientSetup(FMLClientSetupEvent event) {
-        // Register client tick event
-        NeoForge.EVENT_BUS.register(KeybindHandler.class);
-    }
-
     // Handle key press during client tick
     @SubscribeEvent(priority = EventPriority.NORMAL, receiveCanceled = true)
-    public static void onClientTick(ClientTickEvent event)
+    public static void onClientTick(ClientTickEvent.Post event)
     {
         // Check if the key is pressed
         if (Keybinds.notificationExpand.isDown())
