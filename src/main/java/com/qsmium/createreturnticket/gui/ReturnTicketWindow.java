@@ -2,6 +2,7 @@ package com.qsmium.createreturnticket.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.qsmium.createreturnticket.ClientTicketDataHolder;
 import com.qsmium.createreturnticket.ModMain;
 import com.qsmium.createreturnticket.SoundUtils;
 import com.qsmium.createreturnticket.Util;
@@ -29,8 +30,8 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
 {
     public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(ModMain.MODID,"textures/return_ticket.png");
     public static final ResourceLocation TEXTURE2 = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/return_ticket_two.png");
-    public static final ResourceLocation CLOSE_BUTTON = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/ticket_small_close_button.png");
-    public static final ResourceLocation CLOSE_BUTTON_HOVER = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/ticket_small_close_button_hover.png");
+    public static final ResourceLocation CLOSE_BUTTON = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "ticket_small_close_button");
+    public static final ResourceLocation CLOSE_BUTTON_HOVER = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "ticket_small_close_button_hover");
     public static final int TEXTURE_2_WIDTH = 512;
     public static final int TEXTURE_2_HEIGHT = 256;
 
@@ -55,7 +56,6 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     private final int eastereggOffsetX = 108;
     private final int eastereggOffsetY = -24;
 
-    public static boolean activeTicket = false;
     //private final List<Button> buttons = new ArrayList<>();
     private boolean mousePressed = false;
     private int currentRipStage = 0;
@@ -66,14 +66,10 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
     @SubscribeEvent
     public static void onClientSetup(final FMLClientSetupEvent event)
     {
-        RenderSystem.recordRenderCall(() -> Minecraft.getInstance().getMainRenderTarget().enableStencil());
+        event.enqueueWork(() -> {
+            RenderSystem.recordRenderCall(() -> Minecraft.getInstance().getMainRenderTarget().enableStencil());
+        });
     }
-
-//    @SubscribeEvent
-//    public static void onMouseDraggedEvent(ScreenEvent.MouseDragged event)
-//    {
-//        ticketWidget.mouseDragged(event.getDragX(), event.getDragY());
-//    }
 
     public ReturnTicketWindow(int x, int y, int width, int height, Minecraft client, ReturnTicketScreen parent)
     {
@@ -87,13 +83,14 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
 
         //Add our TicketWidget
         ticketWidget = new ReturnTicketWidget(x + 32, y + 13, 110, 50, client);
+        ticketWidget.setActive(ClientTicketDataHolder.activeTicket);
 
         //Add Close Button
         WidgetSprites closeButtonSprites = new WidgetSprites(CLOSE_BUTTON, CLOSE_BUTTON_HOVER);
 
         closeButton = new ImageButton(x + 150, y + 15, 7, 7, closeButtonSprites, button -> {this.clickCloseButton();});
 
-        NeoForge.EVENT_BUS.register(this);
+        //NeoForge.EVENT_BUS.register(this);
     }
 
     //Class to update the x,y,width height etc.
@@ -133,7 +130,7 @@ public class ReturnTicketWindow extends AbstractWidget implements Widget, GuiEve
         closeButton.renderWidget(graphics, mouseX, mouseY, delta);
 
         //Handle Ticket Rendering => Only if we have an active ticket
-        if(activeTicket)
+        if(ClientTicketDataHolder.activeTicket)
         {
             ticketWidget.renderWidget(graphics, mouseX, mouseY, delta);
         }

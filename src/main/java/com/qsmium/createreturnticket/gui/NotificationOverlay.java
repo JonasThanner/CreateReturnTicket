@@ -111,7 +111,7 @@ public class NotificationOverlay
             poseStack.pushPose();
 
             //Variable adjustments
-            currentAnimTime += deltaTracker.getRealtimeDeltaTicks();
+            currentAnimTime += deltaTracker.getRealtimeDeltaTicks() * 2.5f; //Anim Speed adjustment
 
             //If we have more than one notification waiting, we severly reduce the notifcation stay time
             notificationStayLength = stackedNotifications.size() > 1 ? NOTIFICATION_STAY_LENGTH_MASTER / 10 : NOTIFICATION_STAY_LENGTH_MASTER;

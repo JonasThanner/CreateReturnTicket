@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.qsmium.createreturnticket.mixins",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "refmap": "createreturnticket.refmap.json",
   "mixins": [
     "CarriageMixin"

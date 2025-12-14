@@ -91,6 +91,9 @@ public class ReturnTicketScreen extends Screen
         // This gives the default dark transparent background
         this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
 
+        //Main Rendering Method => Will render all Widgets
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+
         //Render the Return Ticket Logo at the top middle of the screen
         //Pose Stack push/pop is just for safety
         PoseStack poseStack = guiGraphics.pose();
@@ -98,11 +101,6 @@ public class ReturnTicketScreen extends Screen
 
         guiGraphics.blit(ReturnTicketWindow.TEXTURE2, this.width / 2 - (LOGO_UV_WIDTH / 2), 10, LOGO_UV_X, LOGO_UV_Y, LOGO_UV_WIDTH, LOGO_UV_HEIGHT, ReturnTicketWindow.TEXTURE_2_WIDTH, ReturnTicketWindow.TEXTURE_2_HEIGHT);
         poseStack.popPose();
-
-        //returnTicketWindow.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
-
-        //Main Rendering Method => Will render all Widgets
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         //Flush depth buffer so we *DEFO* render ontop later
         guiGraphics.flush();

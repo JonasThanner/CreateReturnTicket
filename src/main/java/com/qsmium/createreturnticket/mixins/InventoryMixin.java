@@ -52,7 +52,7 @@ public abstract class InventoryMixin extends EffectRenderingInventoryScreen<Inve
         recipeBookVisiblePrevious = recipeBookComponent.isVisible();
 
         WidgetSprites ticketButtonSprite = new WidgetSprites(TICKET_BUTTON, TICKET_BUTTON_HOVER);
-        returnTicketButton = new ImageButton(this.leftPos + 140, this.topPos + 60, 20, 20, ticketButtonSprite, button -> {
+        returnTicketButton = new ImageButton(this.leftPos + 140, this.topPos + 60, 20, 20, new WidgetSprites(TICKET_BUTTON, TICKET_BUTTON_HOVER), button -> {
             this.minecraft.setScreen(returnTicketScreen);
         });
 

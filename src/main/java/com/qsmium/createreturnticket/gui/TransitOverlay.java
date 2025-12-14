@@ -91,6 +91,7 @@ public class TransitOverlay
         {
             int screenHeight = guiGraphics.guiHeight();
             int screenWidth = guiGraphics.guiWidth();
+            float animSpeed = 2.5f;
 
             //Animation Setup Stuff
             if(startAnimation)
@@ -137,7 +138,7 @@ public class TransitOverlay
             switch (animationState)
             {
                 case 1:
-                    if(arrowSlideInAnim(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 10, screenWidth, screenHeight))
+                    if(arrowSlideInAnim(guiGraphics, deltaTracker.getRealtimeDeltaTicks(), 10 * animSpeed, screenWidth, screenHeight))
                     {
                         animationState = 2;
                     }
@@ -145,7 +146,7 @@ public class TransitOverlay
 
                 case 2:
 
-                    globalAnimTime += deltaTracker.getGameTimeDeltaTicks();
+                    globalAnimTime += deltaTracker.getRealtimeDeltaTicks() * animSpeed;
 
 
                     guiGraphics.flush();
@@ -159,7 +160,7 @@ public class TransitOverlay
                     // => Time to send the redeem request
                     Util.setupStencilMask();
                     RenderSystem.setShaderTexture(0, MASK_TEX);
-                    if(animateFullscreenCovers(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 0.2f, screenWidth,screenHeight))
+                    if(animateFullscreenCovers(guiGraphics, deltaTracker.getRealtimeDeltaTicks() * animSpeed, 0.2f, screenWidth,screenHeight))
                     {
                         globalAnimTime = 0;
                         animationState = 3;
@@ -170,16 +171,16 @@ public class TransitOverlay
 
                     Util.setupStencilTexture(GL11.GL_EQUAL);
                     RenderSystem.setShaderTexture(0, BACKGROUND_TEX);
-                    animateBackground(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 0.3f, screenWidth, screenHeight);
+                    animateBackground(guiGraphics, deltaTracker.getRealtimeDeltaTicks() * animSpeed, 0.3f, screenWidth, screenHeight);
 
                     RenderSystem.setShaderTexture(0, AXOLOTL_TEX);
                     //Animate Axolotl
-                    animateAxolotl(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 8f, screenWidth , screenHeight);
+                    animateAxolotl(guiGraphics, deltaTracker.getRealtimeDeltaTicks() * animSpeed, 8f, screenWidth , screenHeight);
 
                     Util.disableStencil();
 
                     //Draw Animating Arrows
-                    animateArrowToDirection(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), screenWidth, screenHeight);
+                    animateArrowToDirection(guiGraphics, deltaTracker.getRealtimeDeltaTicks() * animSpeed, screenWidth, screenHeight);
 
                     poseStack.popPose();
 
@@ -188,7 +189,7 @@ public class TransitOverlay
 
                 case 3:
 
-                    globalAnimTime += deltaTracker.getGameTimeDeltaTicks();
+                    globalAnimTime += deltaTracker.getRealtimeDeltaTicks() * animSpeed;
 
                     if(globalAnimTime > 200)
                     {
@@ -204,26 +205,26 @@ public class TransitOverlay
                     poseStack.translate(0, 0, 1);
 
                     //animate Background
-                    animateBackground(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 0.3f, screenWidth, screenHeight);
+                    animateBackground(guiGraphics, deltaTracker.getRealtimeDeltaTicks() * animSpeed, 0.3f, screenWidth, screenHeight);
 
                     //Animate Axolotl
-                    animateAxolotl(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 8f, screenWidth , screenHeight);
+                    animateAxolotl(guiGraphics, deltaTracker.getRealtimeDeltaTicks() * animSpeed, 8f, screenWidth , screenHeight);
 
                     //Draw Animating Arrows
-                    animateArrowToDirection(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), screenWidth, screenHeight);
+                    animateArrowToDirection(guiGraphics, deltaTracker.getRealtimeDeltaTicks() * animSpeed, screenWidth, screenHeight);
                     poseStack.popPose();
 
                     break;
 
                 case 4:
 
-                    globalAnimTime += deltaTracker.getGameTimeDeltaTicks();
+                    globalAnimTime += deltaTracker.getRealtimeDeltaTicks() * animSpeed;
 
 
                     //Animate closing
                     Util.setupStencilMask();
                     RenderSystem.setShaderTexture(0, ReturnTicketWidget.TEXTURE);
-                    if(animateCloser(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 1f,screenWidth, screenHeight))
+                    if(animateCloser(guiGraphics, deltaTracker.getRealtimeDeltaTicks() * animSpeed, 1f,screenWidth, screenHeight))
                     {
                         animationRunning = false;
                         Util.setupStencilTexture(GL11.GL_NOTEQUAL);
@@ -233,15 +234,15 @@ public class TransitOverlay
 
                     Util.setupStencilTexture(GL11.GL_NOTEQUAL);
                     RenderSystem.setShaderTexture(0, BACKGROUND_TEX);
-                    animateBackground(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 0.3f, screenWidth, screenHeight);
+                    animateBackground(guiGraphics, deltaTracker.getRealtimeDeltaTicks() * animSpeed, 0.3f, screenWidth, screenHeight);
 
                     //Animate Axolotl
                     RenderSystem.setShaderTexture(0, AXOLOTL_TEX);
-                    animateAxolotl(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), 8f, screenWidth , screenHeight);
+                    animateAxolotl(guiGraphics, deltaTracker.getRealtimeDeltaTicks() * animSpeed, 8f, screenWidth , screenHeight);
 
                     //Draw Animating Arrows
                     RenderSystem.setShaderTexture(0, ReturnTicketWidget.TEXTURE);
-                    animateArrowToDirection(guiGraphics, deltaTracker.getGameTimeDeltaTicks(), screenWidth, screenHeight);
+                    animateArrowToDirection(guiGraphics, deltaTracker.getRealtimeDeltaTicks() * animSpeed, screenWidth, screenHeight);
 
                     Util.disableStencil();
 

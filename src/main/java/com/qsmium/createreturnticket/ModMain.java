@@ -51,7 +51,7 @@ public class ModMain
 //
 //    }
 
-    @EventBusSubscriber(modid = MODID, value = Dist.DEDICATED_SERVER)
+    @EventBusSubscriber(modid = MODID)
     public static class ServerEvents
     {
         @SubscribeEvent
@@ -213,7 +213,7 @@ public class ModMain
         //In the Server Tick Event we need to
         // => Age Player Tickets
         @SubscribeEvent
-        public static void onTickEvent(ServerTickEvent event)
+        public static void onTickEvent(ServerTickEvent.Post event)
         {
 
             //Get all players

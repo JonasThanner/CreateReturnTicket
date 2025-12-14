@@ -38,8 +38,8 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     public static ReturnTicketWidget INSTANCE;
 
     public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(ModMain.MODID,"textures/return_ticket.png");
-    public static final ResourceLocation TICKET_BUTTON = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/ticket_inventory_button.png");
-    public static final ResourceLocation TICKET_BUTTON_HOVER = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "textures/ticket_inventory_button_hover.png");
+    public static final ResourceLocation TICKET_BUTTON = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "ticket_inventory_button");
+    public static final ResourceLocation TICKET_BUTTON_HOVER = ResourceLocation.fromNamespaceAndPath(ModMain.MODID, "ticket_inventory_button_hover");
     public static final int RETURN_TICKET_UV_WIDTH = 98;
     public static final int RETURN_TICKET_UV_HEIGHT = 50;
     public static final int RETURN_TICKT_UV_X = 20;
@@ -96,28 +96,13 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
     public ReturnTicketWidget(int x, int y, int width, int height, Minecraft client)
     {
         super(x, y, width, height, null);
+
         this.client = client;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         INSTANCE = this;
-
-
-
-
-
-
-
-//        buttons.add(new AlwaysOnTopTexturedButtonWidget(x + 3, y + 46, 24, 8, 37, 0, 16, TEXTURE, button -> {
-//            if (Screen.hasShiftDown() && Screen.hasControlDown()) {
-//                NetworkHandler.INSTANCE.sendToServer(RequestPurseActionC2SPacket.extractAll());
-//            } else if (selectedValue() > 0) {
-//                NetworkHandler.INSTANCE.sendToServer(RequestPurseActionC2SPacket.extract(selectedValue()));
-//                resetSelectedValue();
-//            }
-//        }));
-
     }
 
     @Override
@@ -460,7 +445,7 @@ public class ReturnTicketWidget extends AbstractWidget implements Widget, GuiEve
             {
                 //RIP TICKET
                 currentRippingAnimTimer = 0;
-                ReturnTicketWindow.activeTicket = false;
+                ClientTicketDataHolder.activeTicket = false;
                 ReturnTicketPacketHandler.sendWorkToServer(ReturnTicketPacketHandler.ClientToServerWork.RIP_TICKET);
                 ticketAged = false;
 

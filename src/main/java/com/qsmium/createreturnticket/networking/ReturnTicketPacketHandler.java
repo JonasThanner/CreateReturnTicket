@@ -166,11 +166,13 @@ public class ReturnTicketPacketHandler
         switch (s2CReturnTicketPacket.serverToClientWork())
         {
             //First Case => We're asking for return ticket existence
-            // => Set existence status in the return ticket window
+            // => Set existence status in ClientDataHolder
             case TICKET_EXISTENCE:
-                ReturnTicketWindow.activeTicket = s2CReturnTicketPacket.answerTypeBoolean();
-                ReturnTicketWidget.INSTANCE.setActive(s2CReturnTicketPacket.answerTypeBoolean());
-
+                ClientTicketDataHolder.activeTicket = s2CReturnTicketPacket.answerTypeBoolean();
+                if(ReturnTicketWidget.INSTANCE != null)
+                {
+                    ReturnTicketWidget.INSTANCE.setActive(ClientTicketDataHolder.activeTicket); //Race Condition Stuff i think -> Sometimes INSTANCE is null
+                }
                 break;
 
             //Second Case
