@@ -209,9 +209,6 @@ public class TicketManager
             return;
 
         returnTicket.ageTicket(amount);
-
-        //Debug
-        player.displayClientMessage(Component.literal(Integer.toString(returnTicket.getTicketAge())), true);
     }
 
     public static void updatePlayerDimensions(ServerPlayer player)

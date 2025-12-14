@@ -46,13 +46,7 @@ public class ModMain
 
     public ModMain()
     {
-        IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        com.qsmium.createreturnticket.ModRegistry.BLOCKS.register(eventBus);
-        com.qsmium.createreturnticket.ModRegistry.ITEMS.register(eventBus);
-        com.qsmium.createreturnticket.ModRegistry.TILE_ENTITIES.register(eventBus);
         com.qsmium.createreturnticket.ConfigManager.setup();
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setupClient);
     }
 
     private void setup(final FMLCommonSetupEvent event)

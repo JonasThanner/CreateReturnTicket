@@ -63,16 +63,6 @@ public class RenderEventHandler {
         }
     }
 
-    @SubscribeEvent
-    public static void onUseEvent(PlayerInteractEvent.RightClickItem event)
-    {
-        if(event.getItemStack().is(ForgeRegistries.ITEMS.getValue(new ResourceLocation("minecraft", "cobblestone"))))
-        {
-            showBlock(new BlockPos(0, 100, 0));
-        }
-
-    }
-
     public static void showBlock(BlockPos blockPos)
     {
         highLightPos = blockPos;
