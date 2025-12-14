@@ -161,8 +161,6 @@ public class TicketManager
         {
             Vec3 blockpos = returnTicket.getExitLocation();
             ReturnTicketPacketHandler.sendTooFarToPlayer(new BlockPos((int) blockpos.x, (int) blockpos.y, (int) blockpos.z), player);
-
-            //player.displayClientMessage(Component.literal("Youre too Far from the Exit Location: " + returnTicket.getExitLocation()).withStyle(ChatFormatting.DARK_RED), false);
             return false;
         }
 
@@ -205,9 +203,6 @@ public class TicketManager
             return;
 
         returnTicket.ageTicket(amount);
-
-        //Debug
-        player.displayClientMessage(Component.literal(Integer.toString(returnTicket.getTicketAge())), true);
     }
 
     public static void updatePlayerDimensions(ServerPlayer player)

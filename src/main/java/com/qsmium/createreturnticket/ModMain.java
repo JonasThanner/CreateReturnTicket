@@ -191,7 +191,6 @@ public class ModMain
 
                     //Notify Player
                     ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.TICKET_UPDATED, player);
-                    //player.displayClientMessage(Component.literal("Your Return Ticket was updated"), true);
 
                     //Reset Ticket Age internally and on client
                     returnTicket.setTicketAge(0);
