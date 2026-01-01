@@ -12,5 +12,7 @@
 
   "createreturnticket.axolotltip.0": "You can rip the ticket in the middle to get rid of it! ꒰(˶• ᴗ •˶)꒱",
   "createreturnticket.axolotltip.1": "Enter a train too far from your last exit and it doesn't count!",
-  "createreturnticket.axolotltip.2": "UIIAI :3"
+  "createreturnticket.axolotltip.2": "UIIAI :3",
+
+  "key.createreturnticket.expandNotification": "Notification Expand Key"
 }

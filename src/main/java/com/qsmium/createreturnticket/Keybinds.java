@@ -17,7 +17,7 @@ public class Keybinds {
     // Method to register key bindings
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
-        notificationExpand = new KeyMapping("key" + ModMain.MODID + "example", GLFW.GLFW_KEY_LEFT_ALT, CATEGORY); // Example keybind
+        notificationExpand = new KeyMapping("key." + ModMain.MODID + ".expandNotification", GLFW.GLFW_KEY_LEFT_ALT, CATEGORY); // Example keybind
         event.register(notificationExpand);
     }
 }
