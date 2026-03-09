@@ -106,6 +106,7 @@ public class TicketManager
         returnTicket.ripReturnTicket();
         ResourceKey<Level> dimKey = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(returnTicket.getEnterDimension()));
         ServerLevel targetLevel = player.server.getLevel(dimKey);
+        player.setDeltaMovement(Vec3.ZERO);
         player.teleportTo(targetLevel, returnTicket.getEnterLocation().x, returnTicket.getEnterLocation().y, returnTicket.getEnterLocation().z, player.getYRot(), player.getXRot());
 
         //And finally complete everything by resetting the transitioning state
@@ -339,7 +340,7 @@ public class TicketManager
             ReturnTicketPacketHandler.sendTicketEnterStation(player, returnTicket.getEnterStation());
 
             //Save the exact enter location and update the player of it
-            returnTicket.setEnterLocation(player.blockPosition().getCenter());
+            returnTicket.setEnterLocation(returnTicket.getLastGroundPos().getBottomCenter());
             ReturnTicketPacketHandler.sendTicketEnterPosition(player, returnTicket.getEnterLocation());
         }
         else

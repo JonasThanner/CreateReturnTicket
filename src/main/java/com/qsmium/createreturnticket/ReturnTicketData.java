@@ -1,5 +1,6 @@
 package com.qsmium.createreturnticket;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
@@ -10,6 +11,7 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
 {
     private Vec3 enterLocation = new Vec3(0, 0, 0);
     private Vec3 exitLocation = new Vec3(0, 0, 0);
+    private BlockPos lastGroundPos = new BlockPos(0, 0, 0); //Doesnt need to be serialized as its only ever going to be used for a few seconds max
     private String enterDimension = "illegal_dim";
     private String exitDimension = "illegal_dim";
     private boolean rippedReturnTicket = true; //At the beginning no valid return ticket should exist
@@ -30,6 +32,7 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     public void setEnterDimension(String newDim) { enterDimension = newDim; }
     public void setExitDimension(String newDim) { exitDimension = newDim; }
     public void setPlayerTransiting(boolean playerTransiting) { this.playerTransiting = playerTransiting; }
+    public void setPlayerLastGroundPos(BlockPos blockPos) { this.lastGroundPos = blockPos; }
     public void ripReturnTicket() { rippedReturnTicket = true; }
     public void un_ripReturnTicket() { rippedReturnTicket = false; }
     public void invalidateTicket() { invalidTicket = true; }
@@ -42,6 +45,7 @@ public class ReturnTicketData implements INBTSerializable<CompoundTag>
     public String getEnterDimension() { return  enterDimension;}
     public String getExitDimension() { return exitDimension; }
     public boolean isPlayerTransiting() { return playerTransiting; }
+    public BlockPos getLastGroundPos() { return lastGroundPos; }
 
     //Sets the enter Station
     //If the player enters the train after the enter train after it has left a station but is still

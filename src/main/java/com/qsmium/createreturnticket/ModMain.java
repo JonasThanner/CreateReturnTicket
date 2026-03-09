@@ -4,6 +4,7 @@ import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
 import com.simibubi.create.content.trains.entity.Train;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -132,7 +133,7 @@ public class ModMain
                         //Give new ticket and save enter location
                         //And also validate the ticket at the beginning of the journey
                         returnTicket.un_ripReturnTicket();
-                        returnTicket.setEnterLocation(player.getPosition(0));
+                        returnTicket.setEnterLocation(returnTicket.getLastGroundPos().getBottomCenter());
                         returnTicket.setEnterDimension(player.level().dimension().location().toString());
                         returnTicket.validateTicket();
 
@@ -211,6 +212,7 @@ public class ModMain
 
         //In the Server Tick Event we need to
         // => Age Player Tickets
+        // => Check if Player is not floating -> If not, save their current position
         @SubscribeEvent
         public static void onTickEvent(ServerTickEvent.Post event)
         {
@@ -227,10 +229,17 @@ public class ModMain
                 //Age Ticket
                 TicketManager.ageTicket(player, 1);
 
-
                 if(TicketManager.isTicketAged(player))
                 {
                     ReturnTicketPacketHandler.sendAgedTicketToPlayer(player);
+                }
+
+                //Check if player is in air
+                //We need to check if the player is a passenger because there are cases where this can then count as not in the air
+                // => I dont know if this is a thing when mounting or if its because the player gets pushed lower and the block below becomes the rails
+                if(!player.level().getBlockState(player.blockPosition().below()).isAir() && !player.isPassenger())
+                {
+                    TicketManager.GetReturnTicket(player).setPlayerLastGroundPos(player.blockPosition());
                 }
 
             }
