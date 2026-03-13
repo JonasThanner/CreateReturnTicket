@@ -147,6 +147,11 @@ public class ReturnTicketPacketHandler
         PacketDistributor.sendToPlayer(player, new S2CReturnTicketPacket(ServerToClientWork.TICKET_DIMENSIONS, false, new BlockPos(0, 0, 0), enterDim + "§" + exitDim));
     }
 
+    public static void sendTicketExistence(ServerPlayer player)
+    {
+        PacketDistributor.sendToPlayer(player, new S2CReturnTicketPacket(ServerToClientWork.TICKET_EXISTENCE, TicketManager.hasTicket(player)));
+    }
+
 
 
 

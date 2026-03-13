@@ -53,7 +53,7 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
     private static final int AXO_BUBBLE_TEXT_COLOR = 0x522c58;
 
     private static final int BIG_BUBBLE_DISPLAY_TIME = 1000;
-    private static final int TIP_NUMBERS = 2;
+    private static final int TIP_NUMBERS = 3;
     private static final int HINT_HITBOX_LARGER = 5;
     private int BUBBLE_X;
     private int BUBBLE_Y;
@@ -125,7 +125,7 @@ public class AxolotlTalkingTips extends AbstractWidget implements Widget
                 //Check the tip text length => How wide does it need to be
                 Font font = Minecraft.getInstance().font;
                 int neededPixels = font.width(tipText);
-                int bubbleTextWidth = (int)((float)neededPixels * 0.6f);
+                int bubbleTextWidth = Math.clamp((int)((float)neededPixels * 0.6f), 10, guiGraphics.guiWidth() - getX() - 30); //30 buffer to the right
 
                 //Get the amount of lines needed for the 3:2 ratio
 

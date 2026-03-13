@@ -4,18 +4,17 @@ import com.qsmium.createreturnticket.networking.ReturnTicketPacketHandler;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
 import com.simibubi.create.content.trains.entity.Train;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.event.entity.EntityMountEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -38,19 +37,25 @@ public class ModMain
         ReturnTicketAttacher.ATTACHMENT_TYPES.register(modEventBus);
     }
 
-//    @EventBusSubscriber(modid = MODID)
-//    public static class CommonEvents
-//    {
-//        @SubscribeEvent
-//        public static void commonSetup(FMLCommonSetupEvent event)
-//        {
-//            event.enqueueWork(() ->
-//            {
-//                ReturnTicketAttacher.ATTACHMENT_TYPES.register(NeoForge.EVENT_BUS);
-//            });
-//        }
-//
-//    }
+    @OnlyIn(Dist.CLIENT)
+    @EventBusSubscriber(modid = MODID)
+    public static class ClientEvents
+    {
+        //In Client tick we need to
+        // - Check how far away the player is from the exit pos and update the overlay accordingly
+        @SubscribeEvent
+        public static void onClientTick(ClientTickEvent.Post event)
+        {
+            //Check how far way player is from the exit pos
+            //
+            //Check if we even have a ticket before we do more costly distance calc
+            if(ClientTicketDataHolder.activeTicket && Minecraft.getInstance().player != null)
+            {
+                double distToExit = Minecraft.getInstance().player.position().distanceToSqr(ClientTicketDataHolder.exitLocation.getBottomCenter());
+                ClientTicketDataHolder.transferValid = distToExit < ClientTicketDataHolder.transferValidityDistanceSqr;
+            }
+        }
+    }
 
     @EventBusSubscriber(modid = MODID)
     public static class ServerEvents
@@ -87,6 +92,9 @@ public class ModMain
                 {
                     ReturnTicketPacketHandler.sendTicketExitPosition(eventPlayer, pos);
                 }
+
+                //Send Ticket Existence
+                ReturnTicketPacketHandler.sendTicketExistence(eventPlayer);
 
                 //Send The Enter/Exit Dimensions
                 ReturnTicketPacketHandler.sendTicketDimension(eventPlayer, returnTicket.getEnterDimension(), returnTicket.getExitDimension());
@@ -192,6 +200,7 @@ public class ModMain
 
                     //Notify Player
                     ReturnTicketPacketHandler.sendNotificationToPlayer(NotificationManager.NotificationTypes.TICKET_UPDATED, player);
+                    ReturnTicketPacketHandler.sendTicketExistence(player);
 
                     //Reset Ticket Age internally and on client
                     returnTicket.setTicketAge(0);

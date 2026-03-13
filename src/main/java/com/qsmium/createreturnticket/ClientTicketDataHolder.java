@@ -1,7 +1,6 @@
 package com.qsmium.createreturnticket;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
 
 public class ClientTicketDataHolder
 {
@@ -10,7 +9,6 @@ public class ClientTicketDataHolder
 
 
     public static boolean activeTicket = false; //If the player even has a ticket
-    public static Vec3 exitPos = new Vec3(300000000, 0, 0);
     public static BlockPos enterLocation;
     public static boolean enterLocExists = false;
     public static BlockPos exitLocation;
@@ -21,4 +19,6 @@ public class ClientTicketDataHolder
     public static String exitStationDirectionIndicator = "";
     public static String enterStationDimension = "";
     public static String exitStationDimension = "";
+    public static float transferValidityDistanceSqr = 14400;
+    public static boolean transferValid = false;
 }
