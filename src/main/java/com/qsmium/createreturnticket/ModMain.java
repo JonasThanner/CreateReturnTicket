@@ -37,8 +37,7 @@ public class ModMain
         ReturnTicketAttacher.ATTACHMENT_TYPES.register(modEventBus);
     }
 
-    @OnlyIn(Dist.CLIENT)
-    @EventBusSubscriber(modid = MODID)
+    @EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
     public static class ClientEvents
     {
         //In Client tick we need to
