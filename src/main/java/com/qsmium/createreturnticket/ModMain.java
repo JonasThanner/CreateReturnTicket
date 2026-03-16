@@ -50,8 +50,16 @@ public class ModMain
             //Check if we even have a ticket before we do more costly distance calc
             if(ClientTicketDataHolder.activeTicket && Minecraft.getInstance().player != null)
             {
-                double distToExit = Minecraft.getInstance().player.position().distanceToSqr(ClientTicketDataHolder.exitLocation.getBottomCenter());
-                ClientTicketDataHolder.transferValid = distToExit < ClientTicketDataHolder.transferValidityDistanceSqr;
+                //Next layer of check is checking if we are in the correct dim
+                if(!Minecraft.getInstance().player.level().dimension().location().toString().equals(ClientTicketDataHolder.exitStationDimension))
+                {
+                    ClientTicketDataHolder.transferValid = false;
+                }
+                else
+                {
+                    double distToExit = Minecraft.getInstance().player.position().distanceToSqr(ClientTicketDataHolder.exitLocation.getBottomCenter());
+                    ClientTicketDataHolder.transferValid = distToExit < ClientTicketDataHolder.transferValidityDistanceSqr;
+                }
             }
         }
     }
