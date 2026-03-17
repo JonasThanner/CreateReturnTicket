@@ -10,9 +10,9 @@
   "notification.createreturnticket.wrong_dim": "You are in the wrong Dimension",
   "longNotification.createreturnticket.wrong_dim": "Your last exit station is in a different dimension! Go to the Dimension of your exit station or rip your ticket. ꒰(˶•︵•˶)꒱",
 
-  "createreturnticket.axolotltip.0": "You can rip the ticket in the middle to get rid of it! │(╣╖ ╢ ╖╣)┤",
+  "createreturnticket.axolotltip.0": "You can rip the ticket in the middle to get rid of it! │(╣╖╢╖╣)┤",
   "createreturnticket.axolotltip.1": "Enter a train too far from your last exit and it doesn't count!",
-  "createreturnticket.axolotltip.2": "If you have a ticket, the icon next to your hotbar indicates if you can make a valid transfer between trains! Nifty │(╝ O ╝)┤",
+  "createreturnticket.axolotltip.2": "If you have a ticket, the icon next to your hotbar indicates if you can make a valid transfer between trains! Nifty │(╝o╝)┤",
 
   "key.createreturnticket.expandNotification": "Notification Expand Key"
 }
